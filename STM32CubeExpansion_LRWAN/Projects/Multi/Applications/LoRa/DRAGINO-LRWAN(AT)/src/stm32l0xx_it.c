@@ -62,6 +62,7 @@ Maintainer: Miguel Luis and Gregory Cristian
 #include "hw.h"
 #include "stm32l0xx_it.h"
 #include "iwdg.h"
+#include "bsp.h"
 
 extern TIM_HandleTypeDef htim3;
 extern int exti_flag,exti_flag2,exti_flag3;
@@ -70,6 +71,8 @@ extern uint32_t COUNT,COUNT2;
 extern uint8_t mode;
 extern uint8_t switch_status,switch_status2,switch_status3;
 extern bool join_network;
+extern uint32_t COUNT3; //Presense count
+
 /** @addtogroup STM32L1xx_HAL_Examples
   * @{
   */
@@ -275,7 +278,20 @@ void EXTI4_15_IRQHandler( void )
   
   HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_11 );
 
-  HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_12 );
+  // HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_12 );
+  if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_12) != RESET)
+  {
+    if(mode == 10)
+     {
+        COUNT3++;
+				//PPRINTF("Count: %d\r\n", COUNT3);
+//        TimerSetValue(&OffPumpTimer, 2000);
+//	      TimerStart(&OffPumpTimer);			 
+//        Pump_ON();
+     }
+   __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_14);
+   HAL_GPIO_EXTI_Callback(GPIO_PIN_14);
+  }
 
   HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_13 );
 
@@ -314,6 +330,11 @@ void EXTI4_15_IRQHandler( void )
 		   exti_flag2=1;	
 			 COUNT2++;
 		 }
+     else if(mode == 10)
+     {
+        COUNT3=0;
+				PPRINTF("Count: %d\r\n", COUNT3);			
+     }
 	 }
 	 __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_15);
 	 HAL_GPIO_EXTI_Callback(GPIO_PIN_15);

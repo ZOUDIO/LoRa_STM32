@@ -88,6 +88,7 @@ uint8_t flags=0;
 //static GPIO_InitTypeDef  GPIO_InitStruct;
 extern uint16_t batteryLevel_mV;
 extern uint16_t fire_version;
+TimerEvent_t OffPumpTimer;
 
 #ifdef USE_SHT
 extern float sht31_tem,sht31_hum;
@@ -101,6 +102,66 @@ extern uint8_t mode;
 extern uint8_t inmode,inmode2,inmode3;
 extern uint16_t power_time;
 extern uint32_t COUNT,COUNT2;
+
+void Pump_ON(void)
+{
+	HAL_GPIO_WritePin(PUMP_PORT, PUMP_PIN, GPIO_PIN_SET);
+	PPRINTF("Pump On \r\n");
+
+}
+
+void Pump_OFF(void)
+{
+	HAL_GPIO_WritePin(PUMP_PORT, PUMP_PIN, GPIO_PIN_RESET);
+	PPRINTF("Pump off \r\n");
+}
+
+void BSP_Sensor_Init()
+{
+	GPIO_InitTypeDef GPIO_InitStruct = {0};
+	__HAL_RCC_GPIOB_CLK_ENABLE();
+
+	GPIO_InitStruct.Pin = GPIO_PIN_12;	
+	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+	
+	/* EXTI interrupt init*/
+	HAL_NVIC_SetPriority(EXTI4_15_IRQn, 2, 0);
+	HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
+}
+
+void BSP_Button_Init()
+{
+	GPIO_InitTypeDef GPIO_InitStruct = {0};
+	__HAL_RCC_GPIOB_CLK_ENABLE();
+
+	GPIO_InitStruct.Pin = GPIO_PIN_15;	
+	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+	
+	/* EXTI interrupt init*/
+	HAL_NVIC_SetPriority(EXTI4_15_IRQn, 2, 0);
+	HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
+}
+
+void BSP_Pump_Init()
+{
+	GPIO_InitTypeDef GPIO_InitStruct={0};
+	PUMP_CLK_ENABLE();
+	GPIO_InitStruct.Pin = PUMP_PIN;
+	GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull  = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+
+  	HW_GPIO_Init(PUMP_PORT, PUMP_PIN, &GPIO_InitStruct );
+	HAL_GPIO_WritePin(PUMP_PORT, PUMP_PIN, GPIO_PIN_RESET);
+
+	// Timer
+	TimerInit(&OffPumpTimer, Pump_OFF);
+}
+
 
 void BSP_sensor_Read( sensor_t *sensor_data, uint8_t message)
 {	
@@ -479,143 +540,149 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef *hi2c)
   HAL_GPIO_DeInit(I2Cx_SDA_GPIO_PORT, I2Cx_SDA_PIN);
 }
 
-void  BSP_sensor_Init( void  )
+void BSP_sensor_Init(void)
 {
-  #if defined(LoRa_Sensor_Node)
-	
-	 pwr_control_IoInit();		
-	
-	if((mode==1)||(mode==3))
-	{	 
-	 #ifdef USE_SHT
-	 uint8_t txdata1[1]={0xE7},txdata2[2]={0xF3,0x2D};
-	 
-	 BSP_sht20_Init();
+#if defined(LoRa_Sensor_Node)
 
-	 uint32_t currentTime = TimerGetCurrentTime();	 
-	 while(HAL_I2C_Master_Transmit(&I2cHandle1,0x80,txdata1,1,1000) != HAL_OK)
-	 {
-			if(TimerGetElapsedTime(currentTime) >= 500)
-			{
-			 flags=0;
-			 break;
-		 }
-	 }
-	 if(HAL_I2C_Master_Transmit(&I2cHandle1,0x80,txdata1,1,1000) == HAL_OK)
-	 {
-		 flags=1;
-	   PRINTF("\n\rUse Sensor is STH2x\r\n");
-	 }
-	 
-	 if(flags==0)
-	 {	 
-		 HAL_I2C_MspDeInit(&I2cHandle1);	 
-		 BSP_sht31_Init();
+  pwr_control_IoInit();
 
-		 currentTime = TimerGetCurrentTime();		 
-	 	 while(HAL_I2C_Master_Transmit(&I2cHandle2,0x88,txdata2,2,1000) != HAL_OK) 
-		 {
-			if(TimerGetElapsedTime(currentTime) >= 500)
+  if ((mode == 1) || (mode == 3))
+  {
+#ifdef USE_SHT
+		uint8_t txdata1[1] = {0xE7}, txdata2[2] = {0xF3, 0x2D};
+
+		BSP_sht20_Init();
+
+		uint32_t currentTime = TimerGetCurrentTime();
+		while (HAL_I2C_Master_Transmit(&I2cHandle1, 0x80, txdata1, 1, 1000) != HAL_OK)
+		{
+			if (TimerGetElapsedTime(currentTime) >= 500)
 			{
-			 flags=0;
-			 break;
+				flags = 0;
+				break;
 			}
-		 }
-	 if(HAL_I2C_Master_Transmit(&I2cHandle2,0x88,txdata2,2,1000) == HAL_OK)
-	 {
-		 flags=2;
-		 PRINTF("\n\rUse Sensor is STH3x\r\n");
-	 }	 
-   }
-	 
-	 if(flags==0)
-	 {
-		 float luxtemp;
-		 HAL_I2C_MspDeInit(&I2cHandle2);
-		 I2C_IoInit();
-		 luxtemp=bh1750_read();
-		 I2C_DoInit();
-		 if(luxtemp!=0)
-		 {
-			flags=3;
-			PRINTF("\n\rUse Sensor is BH1750\r\n");			 
-		 }
-	 }
-	 
-	 if(flags==0)
-	 {
-		 PRINTF("\n\rNo I2C device detected\r\n");
-	 }
-	 #endif
-   }
-	 
-	else if(mode==2)
-	{	
-	  uint8_t dataByte[1]={0x00};		
-	  HAL_GPIO_WritePin(PWR_OUT_PORT,PWR_OUT_PIN,GPIO_PIN_RESET);//Enable 5v power supply	
-    BSP_lidar_Init();
-    waitbusy(); 	
-    HAL_I2C_Mem_Write(&I2cHandle3,0xc4,0x00,1,dataByte,1,1000);	
-	  if(waitbusy()<9999)
-	  {
-     mode2_flag=1;					
-		 PRINTF("\n\rUse Sensor is LIDAR_Lite_v3HP\r\n");
-	  }		
-	  else
-	  {		 
-		 HAL_I2C_MspDeInit(&I2cHandle3);	 		
-		 GPIO_ULT_INPUT_Init();
-		 GPIO_ULT_OUTPUT_Init();		
-		 if(HAL_GPIO_ReadPin(ULT_Echo_PORT, ULT_Echo_PIN)==RESET)
-	   {  
-			mode2_flag=2;	  
-			TIM3_Init();
-			PRINTF("\n\rUse Sensor is ultrasonic distance measurement\r\n");				 
-		 }	 
-		 GPIO_ULT_INPUT_DeInit();
-		 GPIO_ULT_OUTPUT_DeInit();
-		 
-		 if(mode2_flag==0)
-		 {	 
-			if(check_deceive()==1)
+		}
+		if (HAL_I2C_Master_Transmit(&I2cHandle1, 0x80, txdata1, 1, 1000) == HAL_OK)
+		{
+			flags = 1;
+			PRINTF("\n\rUse Sensor is STH2x\r\n");
+		}
+
+		if (flags == 0)
+		{
+			HAL_I2C_MspDeInit(&I2cHandle1);
+			BSP_sht31_Init();
+
+			currentTime = TimerGetCurrentTime();
+			while (HAL_I2C_Master_Transmit(&I2cHandle2, 0x88, txdata2, 2, 1000) != HAL_OK)
 			{
-				mode2_flag=3;
-				PRINTF("\n\rUse Sensor is TF-series sensor\r\n");	
-			}	
-			else
-			{	
-		    PRINTF("\n\rNo distance measurement device detected\r\n");					
-			}					
-		 }
-	  }
-		HAL_GPIO_WritePin(PWR_OUT_PORT,PWR_OUT_PIN,GPIO_PIN_SET);//Disable 5v power supply		
-	}
-	else if(mode==5)
-	{
-	  HAL_GPIO_WritePin(PWR_OUT_PORT,PWR_OUT_PIN,GPIO_PIN_RESET);//Enable 5v power supply	
+				if (TimerGetElapsedTime(currentTime) >= 500)
+				{
+					flags = 0;
+					break;
+				}
+			}
+			if (HAL_I2C_Master_Transmit(&I2cHandle2, 0x88, txdata2, 2, 1000) == HAL_OK)
+			{
+				flags = 2;
+				PRINTF("\n\rUse Sensor is STH3x\r\n");
+			}
+		}
+
+		if (flags == 0)
+		{
+			float luxtemp;
+			HAL_I2C_MspDeInit(&I2cHandle2);
+			I2C_IoInit();
+			luxtemp = bh1750_read();
+			I2C_DoInit();
+			if (luxtemp != 0)
+			{
+				flags = 3;
+				PRINTF("\n\rUse Sensor is BH1750\r\n");
+			}
+		}
+
+		if (flags == 0)
+		{
+			PRINTF("\n\rNo I2C device detected\r\n");
+		}
+#endif
+  }
+
+  else if (mode == 2)
+  {
+		uint8_t dataByte[1] = {0x00};
+		HAL_GPIO_WritePin(PWR_OUT_PORT, PWR_OUT_PIN, GPIO_PIN_RESET); // Enable 5v power supply
+		BSP_lidar_Init();
+		waitbusy();
+		HAL_I2C_Mem_Write(&I2cHandle3, 0xc4, 0x00, 1, dataByte, 1, 1000);
+		if (waitbusy() < 9999)
+		{
+			mode2_flag = 1;
+			PRINTF("\n\rUse Sensor is LIDAR_Lite_v3HP\r\n");
+		}
+		else
+		{
+			HAL_I2C_MspDeInit(&I2cHandle3);
+			GPIO_ULT_INPUT_Init();
+			GPIO_ULT_OUTPUT_Init();
+			if (HAL_GPIO_ReadPin(ULT_Echo_PORT, ULT_Echo_PIN) == RESET)
+			{
+				mode2_flag = 2;
+				TIM3_Init();
+				PRINTF("\n\rUse Sensor is ultrasonic distance measurement\r\n");
+			}
+			GPIO_ULT_INPUT_DeInit();
+			GPIO_ULT_OUTPUT_DeInit();
+
+			if (mode2_flag == 0)
+			{
+				if (check_deceive() == 1)
+				{
+					mode2_flag = 3;
+					PRINTF("\n\rUse Sensor is TF-series sensor\r\n");
+				}
+				else
+				{
+					PRINTF("\n\rNo distance measurement device detected\r\n");
+				}
+			}
+		}
+		HAL_GPIO_WritePin(PWR_OUT_PORT, PWR_OUT_PIN, GPIO_PIN_SET); // Disable 5v power supply
+  }
+  else if (mode == 5)
+  {
+		HAL_GPIO_WritePin(PWR_OUT_PORT, PWR_OUT_PIN, GPIO_PIN_RESET); // Enable 5v power supply
 		WEIGHT_SCK_Init();
 		WEIGHT_DOUT_Init();
 		Get_Maopi();
-    HAL_Delay(500);
-		Get_Maopi();	
+		HAL_Delay(500);
+		Get_Maopi();
 		WEIGHT_SCK_DeInit();
-		WEIGHT_DOUT_DeInit();				
-		HAL_GPIO_WritePin(PWR_OUT_PORT,PWR_OUT_PIN,GPIO_PIN_SET);//Disable 5v power supply		
-		PPRINTF("\n\rUse Sensor is HX711\r\n");			
-	}
-	else if((mode==7)||(mode==9))
-	{
+		WEIGHT_DOUT_DeInit();
+		HAL_GPIO_WritePin(PWR_OUT_PORT, PWR_OUT_PIN, GPIO_PIN_SET); // Disable 5v power supply
+		PPRINTF("\n\rUse Sensor is HX711\r\n");
+  }
+  else if ((mode == 7) || (mode == 9))
+  {
 		GPIO_EXTI15_IoInit(inmode2);
-	  GPIO_EXTI4_IoInit(inmode3);
-		if(mode==9)
+		GPIO_EXTI4_IoInit(inmode3);
+		if (mode == 9)
 		{
 			BSP_oil_float_DeInit();
 		}
-	}
-	
-	GPIO_EXTI14_IoInit(inmode);
-	GPIO_INPUT_IoInit();
-	
-	#endif
+  }
+  else if (mode == 10)
+  {
+		PPRINTF("\n\r Mode 10 init \r\n");
+		BSP_Sensor_Init();
+		BSP_Button_Init();
+		BSP_Pump_Init();
+  }
+  GPIO_EXTI14_IoInit(inmode);
+  GPIO_INPUT_IoInit();
+
+#endif
 }
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

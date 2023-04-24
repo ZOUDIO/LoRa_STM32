@@ -262,6 +262,11 @@ Maintainer: Miguel Luis and Gregory Cristian
 #define ULT_Echo_PORT             GPIOA
 #define ULT_Echo_PIN              GPIO_PIN_11
 
+/* ---------------------------  Custom definition -------------------------------*/
+#define PUMP_CLK_ENABLE()         __HAL_RCC_GPIOB_CLK_ENABLE()
+#define PUMP_PORT                 GPIOB
+#define PUMP_PIN                  GPIO_PIN_13
+
 /* ---------------------------  +5v PWR OUT definition -------------------------------*/
 #define PWR_OUT_PORT              GPIOB
 #define PWR_OUT_PIN               GPIO_PIN_5

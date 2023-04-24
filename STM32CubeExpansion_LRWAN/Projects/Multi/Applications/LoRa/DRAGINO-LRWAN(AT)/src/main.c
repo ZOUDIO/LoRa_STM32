@@ -111,7 +111,7 @@ static uint8_t normal_status=0,normal2_status=0,normal3_status=0;
 bool is_check_exit=0;
 bool rxpr_flags=0;
 int exti_flag=0,exti_flag2=0,exti_flag3=0;
-uint32_t COUNT=0,COUNT2=0;
+uint32_t COUNT = 0, COUNT2 = 0, COUNT3 = 0;
 uint8_t TDC_flag=0;
 uint8_t join_flag=0;
 uint8_t atz_flags=0;
@@ -824,6 +824,14 @@ static void Send( void )
 		AppData.Buff[i++] =	(uint8_t)((COUNT2)>>16);	
 		AppData.Buff[i++] = (uint8_t)((COUNT2)>>8);
 		AppData.Buff[i++] =	(uint8_t)(COUNT2); 		
+	}
+
+	else if (mode == 10)
+	{
+		AppData.Buff[i++] = (uint8_t)((COUNT3) >> 24);
+		AppData.Buff[i++] = (uint8_t)((COUNT3) >> 16);
+		AppData.Buff[i++] = (uint8_t)((COUNT3) >> 8);
+		AppData.Buff[i++] = (uint8_t)(COUNT3);
 	}
 	
 	if(exit_temp==1)

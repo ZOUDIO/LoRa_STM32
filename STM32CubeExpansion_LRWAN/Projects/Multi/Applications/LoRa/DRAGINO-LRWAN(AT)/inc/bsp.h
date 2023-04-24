@@ -67,6 +67,7 @@ Maintainer: Miguel Luis and Gregory Cristian
 #endif
 
 #include "hw.h"
+#include "timeServer.h"
 
 /* Includes ------------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
@@ -114,6 +115,7 @@ typedef struct{
 
 /* Exported constants --------------------------------------------------------*/
 /* External variables --------------------------------------------------------*/
+extern TimerEvent_t OffPumpTimer;
 /* Exported macros -----------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */ 
 /**
@@ -133,7 +135,8 @@ void  BSP_sensor_Init( void  );
 void BSP_sensor_Read( sensor_t *sensor_data, uint8_t message);
 
 void Device_status( device_t *device_data);
-
+void Pump_ON(void);
+void Pump_OFF(void);
 #ifdef __cplusplus
 }
 #endif
