@@ -669,6 +669,9 @@ bool RegionEU868RxConfig( RxConfigParams_t* rxConfig, int8_t* datarate )
     return true;
 }
 
+extern uint8_t mode;
+extern uint32_t COUNT, COUNT2, COUNT3;
+
 bool RegionEU868TxConfig( TxConfigParams_t* txConfig, int8_t* txPower, TimerTime_t* txTimeOnAir )
 {
     RadioModems_t modem;
@@ -704,6 +707,7 @@ bool RegionEU868TxConfig( TxConfigParams_t* txConfig, int8_t* txPower, TimerTime
 		{
 			txfreq_a=Channels[txConfig->Channel].Frequency/1000000;
 			txfreq_b=(Channels[txConfig->Channel].Frequency%1000000)/1000;
+            PPRINTF( "Mode %d, Count3 = %d, Count2 = %d, Count1 = %d \r\n",mode, COUNT3, COUNT2, COUNT);						
 			PPRINTF( "TX on freq %d.%d MHz at DR %d\r\n",txfreq_a,txfreq_b,txConfig->Datarate );						
     }
 		

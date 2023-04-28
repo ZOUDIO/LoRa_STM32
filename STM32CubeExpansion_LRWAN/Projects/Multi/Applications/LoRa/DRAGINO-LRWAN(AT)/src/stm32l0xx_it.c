@@ -284,13 +284,11 @@ void EXTI4_15_IRQHandler( void )
     if(mode == 10)
      {
         COUNT3++;
-				//PPRINTF("Count: %d\r\n", COUNT3);
-//        TimerSetValue(&OffPumpTimer, 2000);
-//	      TimerStart(&OffPumpTimer);			 
-//        Pump_ON();
+		 
+        Pump_ON();
      }
-   __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_14);
-   HAL_GPIO_EXTI_Callback(GPIO_PIN_14);
+   __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_12);
+   HAL_GPIO_EXTI_Callback(GPIO_PIN_12);
   }
 
   HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_13 );
@@ -330,12 +328,12 @@ void EXTI4_15_IRQHandler( void )
 		   exti_flag2=1;	
 			 COUNT2++;
 		 }
-     else if(mode == 10)
+	 }
+	   if(mode == 10)
      {
         COUNT3=0;
 				PPRINTF("Count: %d\r\n", COUNT3);			
      }
-	 }
 	 __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_15);
 	 HAL_GPIO_EXTI_Callback(GPIO_PIN_15);
   }

@@ -106,14 +106,14 @@ extern uint32_t COUNT,COUNT2;
 void Pump_ON(void)
 {
 	HAL_GPIO_WritePin(PUMP_PORT, PUMP_PIN, GPIO_PIN_SET);
-	PPRINTF("Pump On \r\n");
+//	PPRINTF("Pump On \r\n");
 
 }
 
 void Pump_OFF(void)
 {
 	HAL_GPIO_WritePin(PUMP_PORT, PUMP_PIN, GPIO_PIN_RESET);
-	PPRINTF("Pump off \r\n");
+//	PPRINTF("Pump off \r\n");
 }
 
 void BSP_Sensor_Init()
@@ -544,7 +544,7 @@ void BSP_sensor_Init(void)
 {
 #if defined(LoRa_Sensor_Node)
 
-  pwr_control_IoInit();
+//  pwr_control_IoInit();
 
   if ((mode == 1) || (mode == 3))
   {
