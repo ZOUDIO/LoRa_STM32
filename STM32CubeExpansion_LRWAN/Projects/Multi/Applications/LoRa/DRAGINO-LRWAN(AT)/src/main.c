@@ -823,6 +823,8 @@ static void Send(void)
 
 	else if (mode == 10)
 	{
+		AppData.Buff[i++] = (batteryLevel_mV >> 8); // level of battery in mV
+		AppData.Buff[i++] = batteryLevel_mV & 0xFF;
 		AppData.Buff[i++] = (uint8_t)((COUNT3) >> 24);
 		AppData.Buff[i++] = (uint8_t)((COUNT3) >> 16);
 		AppData.Buff[i++] = (uint8_t)((COUNT3) >> 8);
