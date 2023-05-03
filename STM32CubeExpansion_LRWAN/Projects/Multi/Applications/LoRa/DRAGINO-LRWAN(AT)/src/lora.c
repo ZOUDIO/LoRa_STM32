@@ -87,7 +87,7 @@ uint8_t RX2DR_setting_status;
 uint16_t fire_version=0;
 uint16_t fire_frequcy=0;
 uint32_t Automatic_join_network[1]={0x11};
-uint8_t mode;
+uint8_t mode=10;
 uint8_t decrypt_flag=0;
 uint8_t inmode,inmode2,inmode3;
 bool down_check=0;
@@ -547,7 +547,7 @@ void fdr_config(void)
 			LoRaMacMibSetRequestConfirm( &mibReq );
 	#endif	
 				
-	mode=1;			
+	mode=10;			
 	inmode=2;		
 	inmode2=2;		
 	inmode3=2;					
@@ -1300,7 +1300,7 @@ void EEPROM_Read_Config(void)
 	
 	flag2=r_config[13]&0xFF;
 	
-	mode=(r_config[14]>>24)&0xFF;
+	// mode=(r_config[14]>>24)&0xFF;
 	
 	inmode=(r_config[14]>>16)&0xFF;	
 
