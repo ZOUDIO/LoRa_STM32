@@ -11,6 +11,24 @@ In file Projects/Multi/Applications/LoRa/DRAGINO-LRWAN(AT)/inc/hw_conf.h
 
     #define LoRa_Sensor_Node /*LSN50*/      --- For LSN50
     //#define AT_Data_Send /*AT+SEND or AT+SENDB*/    --- For LoRa ST
+
+# Custom work
+
+## Version: V1.8.1
+## Pin used
+- Sensor pin: PB12 - Pull-down internally, input interrupt with rising edge
+- Button pin: PB15- Pull-down internally, input interrupt with rising edge
+- Pump pin: PB13 - Output
+
+## Uplink package format
+| Size (bytes) |    2           |        4          |
+|--------------|----------------|--------------------
+| value        |  Battery (mV)  | Counter           |
+
+## Note
+> Current implementation will prevent changing to other working mode and force to run in mode 10 after reset
+
+
 	
 	
 
