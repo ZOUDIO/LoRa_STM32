@@ -101,6 +101,8 @@ uint32_t ServerSetTDC;
 /*!
  * User application data
  */
+
+#define PUMP_OFF_TIME_DEFAULT			(2000) //ms
 static uint8_t AppDataBuff[LORAWAN_APP_DATA_BUFF_SIZE];
 static uint8_t downlink_command_buffer[4];
 static uint8_t downlink_command_buffersize = 0;
@@ -112,6 +114,7 @@ bool is_check_exit = 0;
 bool rxpr_flags = 0;
 int exti_flag = 0, exti_flag2 = 0, exti_flag3 = 0;
 uint32_t COUNT = 0, COUNT2 = 0, COUNT3 = 0;
+uint32_t pump_off_ms = PUMP_OFF_TIME_DEFAULT; // Pump off time in ms
 uint8_t TDC_flag = 0;
 uint8_t join_flag = 0;
 uint8_t atz_flags = 0;
@@ -1362,6 +1365,17 @@ static void LORA_RxData(lora_AppData_t *AppData)
 			}
 			EEPROM_Store_Config();
 			rxpr_flags = 1;
+		}
+		break;
+	}
+
+	case 0x34:
+	{
+		if (AppData->BuffSize == 5) //---->AT+SETMAXDC
+		{
+			// Update new pump-off timeout
+			pump_off_timeout = AppData->Buff[1] << 24 | AppData->Buff[2] << 16 |
+							   AppData->Buff[3] << 8 | AppData->Buff[4];
 		}
 		break;
 	}

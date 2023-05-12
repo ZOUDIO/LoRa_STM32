@@ -25,6 +25,14 @@ In file Projects/Multi/Applications/LoRa/DRAGINO-LRWAN(AT)/inc/hw_conf.h
 |--------------|----------------|--------------------
 | value        |  Battery (mV)  | Counter           |
 
+
+## Adjusting pump-timeout (will reset to default value ~2s if the MCU is reset)
+
+| Size (bytes) |    1           |        4          |
+|--------------|----------------|--------------------
+| value        |  0x34          | New pump off timer|
+
+Ex: To set pump time off to 5000ms (5s) -> 0x34 0x00 0x00 0x13 0x18 
 ## Note
 > Current implementation will prevent changing to other working mode and force to run in mode 10 after reset
 

@@ -72,7 +72,7 @@ extern uint8_t mode;
 extern uint8_t switch_status, switch_status2, switch_status3;
 extern bool join_network;
 extern uint32_t COUNT3; // Presense count
-
+extern uint32_t pump_off_ms;  
 /** @addtogroup STM32L1xx_HAL_Examples
  * @{
  */
@@ -285,7 +285,7 @@ void EXTI4_15_IRQHandler(void)
       {
         
         COUNT3++;
-        TimerSetValue(&OffPumpTimer, 2000); // Set timeout for 2s
+        TimerSetValue(&OffPumpTimer, pump_off_ms); // Set timeout for 2s
         TimerStart(&OffPumpTimer);
         Pump_ON();
         last_tick = cur_tick;
