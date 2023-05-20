@@ -687,6 +687,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\src\tiny_vsnprintf.c</FilePath>
             </File>
+            <File>
+              <FileName>ds3231_for_stm32_hal.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\ds3231_for_stm32_hal.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

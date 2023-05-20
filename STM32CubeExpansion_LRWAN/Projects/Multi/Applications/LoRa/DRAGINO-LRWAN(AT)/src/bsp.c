@@ -64,12 +64,15 @@
 #include "pwr_out.h"
 #include "ult.h"
 #include "lidar_lite_v3hp.h"
+#include "ds3231_for_stm32_hal.h"
 #include "weight.h"
 #include "iwdg.h"
 #include "bh1750.h"
 #include "tfsensor.h"
 #endif
 /* Private macro -------------------------------------------------------------*/
+#define I2C_TIMING    0x10A13E56 /* 100 kHz with analog Filter ON, Rise Time 400ns, Fall Time 100ns */ 
+
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 /* Exported functions ---------------------------------------------------------*/
@@ -107,6 +110,49 @@ void Pump_ON(void)
 {
 	HAL_GPIO_WritePin(PUMP_PORT, PUMP_PIN, GPIO_PIN_SET);
 //	PPRINTF("Pump On \r\n");
+
+}
+
+void BSP_RTC_Init(void)
+{
+	HAL_I2C_MspInit(&I2cHandle3);
+	I2cHandle3.Instance              = I2Cx;
+	I2cHandle3.Init.Timing           = I2C_TIMING;
+	I2cHandle3.Init.AddressingMode   = I2C_ADDRESSINGMODE_7BIT;
+	I2cHandle3.Init.DualAddressMode  = I2C_DUALADDRESS_DISABLE;
+	I2cHandle3.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+	I2cHandle3.Init.GeneralCallMode  = I2C_GENERALCALL_DISABLE;
+	I2cHandle3.Init.NoStretchMode    = I2C_NOSTRETCH_DISABLE;  
+	I2cHandle3.Init.OwnAddress1      = 0;
+	
+	if(HAL_I2C_Init(&I2cHandle3) != HAL_OK)
+	{
+		/* Initialization Error */
+		Error_Handler();
+	}
+
+	/* Enable the Analog I2C Filter */
+	HAL_I2CEx_ConfigAnalogFilter(&I2cHandle3,I2C_ANALOGFILTER_ENABLE);
+	/* Infinite loop */
+	
+	DS3231_Init(&I2cHandle3);
+
+	
+	//Set time.
+	DS3231_SetFullTime(23, 59, 50);
+
+	uint16_t ds3231_time_value = DS3231_GetHour();
+	ds3231_time_value = DS3231_GetMinute();
+	ds3231_time_value = DS3231_GetSecond();
+	HAL_Delay(1000);
+	//Set date.
+	DS3231_SetFullDate(10, 11, 2, 2020);
+
+
+	PPRINTF("ISO8601 FORMAT: %04d-%02d-%02dT%02d:%02d:%02d %s %d.%02d\n", 
+		DS3231_GetYear(), DS3231_GetMonth(), DS3231_GetDate(), 
+		DS3231_GetHour(), DS3231_GetMinute(), DS3231_GetSecond(), day[DS3231_GetDayOfWeek()-1],
+		DS3231_GetTemperatureInteger(), DS3231_GetTemperatureFraction());
 
 }
 
@@ -679,6 +725,7 @@ void BSP_sensor_Init(void)
 		BSP_Sensor_Init();
 		BSP_Button_Init();
 		BSP_Pump_Init();
+		BSP_RTC_Init();
   }
   GPIO_EXTI14_IoInit(inmode);
   GPIO_INPUT_IoInit();
