@@ -1371,10 +1371,10 @@ static void LORA_RxData(lora_AppData_t *AppData)
 
 	case 0x34:
 	{
-		if (AppData->BuffSize == 5) //---->AT+SETMAXDC
+		if (AppData->BuffSize == 5) //----> Adjusting pump-timeout
 		{
 			// Update new pump-off timeout
-			pump_off_timeout = AppData->Buff[1] << 24 | AppData->Buff[2] << 16 |
+			pump_off_ms = AppData->Buff[1] << 24 | AppData->Buff[2] << 16 |
 							   AppData->Buff[3] << 8 | AppData->Buff[4];
 		}
 		break;
