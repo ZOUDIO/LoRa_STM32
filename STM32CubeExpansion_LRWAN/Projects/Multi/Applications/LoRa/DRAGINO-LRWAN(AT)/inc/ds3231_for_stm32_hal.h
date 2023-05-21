@@ -9,8 +9,6 @@
 #ifndef DS3231_FOR_STM32_HAL_H
 #define DS3231_FOR_STM32_HAL_H
 
-extern char *day[7];
-
 /*----------------------------------------------------------------------------*/
 #define DS3231_I2C_ADDR 	0x68
 
@@ -60,6 +58,26 @@ extern char *day[7];
 
 #define DS3231_TIMEOUT		HAL_MAX_DELAY
 /*----------------------------------------------------------------------------*/
+extern char *ds3231_dayofweek[7];
+
+typedef enum DS3231_Day{
+	DS3231_SUNDAY = 1,
+	DS3231_MONDAY,
+	DS3231_TUESDAY,
+	DS3231_WEDNESDAY,
+	DS3231_THURSDAY,
+	DS3231_FRIDAY,
+	DS3231_SATURDAY
+};
+typedef struct current_time {
+    uint16_t year;      /* Year (CE) */
+    uint8_t month;      /* Month (1-12) */
+    uint8_t day;        /* Day of the month (1-31) */
+    uint8_t hours;      /* Hours since midnight (0-23) */
+    uint8_t minutes;    /* Minutes after the hour (0-59) */
+    uint8_t seconds;    /* Seconds after the minute (0-59) */
+    uint8_t day_of_week;/* Day of the week (1-7), 1= Sunday */
+};
 typedef enum DS3231_Rate{
 	DS3231_1HZ, DS3231_1024HZ, DS3231_4096HZ, DS3231_8192HZ
 }DS3231_Rate;

@@ -142,6 +142,8 @@ typedef enum eATEerror
 #define AT_DISFCNTCHECK 		"+DISFCNTCHECK"
 #define AT_DISMACANS 	   	  "+DISMACANS"
 #define AT_RXDATEST  			  "+RXDATEST"
+#define AT_RTCTIME     "+TIME"
+#define AT_RTCDATE      "+DATE"
 
 /* Exported functions ------------------------------------------------------- */
 void weightreset(void);
@@ -729,6 +731,13 @@ ATEerror_t at_dismac_answer_get(const char *param);
 
 ATEerror_t at_rxdata_test(const char *param);
 
+ATEerror_t at_TIME_get(const char *param);
+
+ATEerror_t at_TIME_set(const char *param);
+
+ATEerror_t at_DATE_get(const char *param);
+
+ATEerror_t at_DATE_set(const char *param);
 #ifdef __cplusplus
 }
 #endif

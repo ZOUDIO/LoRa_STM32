@@ -788,6 +788,27 @@ static const struct ATCommand_s ATCommand[] =
             .set = at_return_error,
             .run = at_CFG_run,
         },
+        {
+            .string = AT_RTCTIME,
+            .size_string = sizeof(AT_RTCTIME) - 1,
+#ifndef NO_HELP
+            .help_string = "AT" AT_RTCTIME ": Get/Set time for DS3231\r\n",
+#endif
+            .get = at_TIME_get,
+            .set = at_TIME_set,
+            .run = at_return_error,
+        },
+        {
+            .string = AT_RTCDATE,
+            .size_string = sizeof(AT_RTCDATE) - 1,
+#ifndef NO_HELP
+            .help_string = "AT" AT_RTCDATE ": Get/Set date for DS3231\r\n",
+#endif
+            .get = at_DATE_get,
+            .set = at_DATE_set,
+            .run = at_return_error,
+        },
+        
 };
 
 /* Private function prototypes -----------------------------------------------*/

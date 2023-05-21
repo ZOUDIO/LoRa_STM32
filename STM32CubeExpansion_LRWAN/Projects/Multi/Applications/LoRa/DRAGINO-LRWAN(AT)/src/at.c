@@ -64,6 +64,7 @@
 #include "gpio_exti.h"
 #include "weight.h"
 #include "bsp.h"
+#include "ds3231_for_stm32_hal.h"
 
 bool debug_flags = 0;
 bool message_flags = 0;
@@ -1600,6 +1601,48 @@ ATEerror_t at_MOD_set(const char *param)
 ATEerror_t at_MOD_get(const char *param)
 {
   print_d(mode);
+  return AT_OK;
+}
+
+ATEerror_t at_TIME_get(const char *param)
+{
+  uint8_t sec, min, hour;
+  BSP_RTC_GetTime(&hour, &min, &sec);
+  AT_PRINTF("%02d:%02d:%02d\r\n", hour, min, sec);
+  return AT_OK;
+}
+
+ATEerror_t at_TIME_set(const char *param)
+{
+  uint8_t sec, min, hour;
+  if (tiny_sscanf(param, "%d,%d,%d", &hour, &min, &sec) != 3)
+  {
+    return AT_PARAM_ERROR;
+  }
+  PPRINTF("Set time to %02d:%02d:%02d\r\n", hour, min, sec);
+  BSP_RTC_SetTime(hour, min, sec);
+  return AT_OK;
+}
+
+ATEerror_t at_DATE_get(const char *param)
+{
+  uint16_t year;
+  uint8_t day, date, month;
+  BSP_RTC_GetDate(&day, &date, &month, &year);
+  AT_PRINTF("%02d:%02d:%02d:%02d\r\n", day, date, month, year);
+  return AT_OK;
+}
+
+ATEerror_t at_DATE_set(const char *param)
+{
+  uint16_t year;
+  uint8_t day, date, month;
+  if(tiny_sscanf(param, "%d,%d,%d,%d", &day, &date, &month, &year) != 4)
+  {
+    return AT_PARAM_ERROR;
+  }
+  PPRINTF("Set date to %s, %d-%d-%d \r\n", ds3231_dayofweek[day-1], date, month, year);
+  BSP_RTC_SetDate(day, date, month, year);
   return AT_OK;
 }
 

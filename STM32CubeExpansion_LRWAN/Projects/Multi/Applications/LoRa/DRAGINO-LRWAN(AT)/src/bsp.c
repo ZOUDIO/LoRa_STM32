@@ -106,15 +106,12 @@ extern uint8_t inmode,inmode2,inmode3;
 extern uint16_t power_time;
 extern uint32_t COUNT,COUNT2;
 
-void Pump_ON(void)
-{
-	HAL_GPIO_WritePin(PUMP_PORT, PUMP_PIN, GPIO_PIN_SET);
-//	PPRINTF("Pump On \r\n");
-
-}
-
+/**
+ * @brief  Init the DS3231 with VCC pin <-> PB14
+ */
 void BSP_RTC_Init(void)
 {
+	// Init I2C for DS3231
 	HAL_I2C_MspInit(&I2cHandle3);
 	I2cHandle3.Instance              = I2Cx;
 	I2cHandle3.Init.Timing           = I2C_TIMING;
@@ -133,33 +130,83 @@ void BSP_RTC_Init(void)
 
 	/* Enable the Analog I2C Filter */
 	HAL_I2CEx_ConfigAnalogFilter(&I2cHandle3,I2C_ANALOGFILTER_ENABLE);
-	/* Infinite loop */
+
+	// Init PWR pin for DS3231
+	GPIO_InitTypeDef GPIO_InitStruct={0};
+	DS3231_PWR_CLK_ENABLE();
+	GPIO_InitStruct.Pin = DS3231_PWR_PIN;
+	GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull  = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+  	HW_GPIO_Init(DS3231_PWR_PORT, DS3231_PWR_PIN, &GPIO_InitStruct );
 	
+	DS3231_PWR_PIN_ON();			// Power on RTC
+	HAL_Delay(300);
+
 	DS3231_Init(&I2cHandle3);
-
 	
-	//Set time.
-	DS3231_SetFullTime(23, 59, 50);
+	PPRINTF("\r\n Date: %04d-%02d-%02d \n Time: %02d:%02d:%02d %s %d.%02d\n", 
+	DS3231_GetYear(), DS3231_GetMonth(), DS3231_GetDate(), 
+	DS3231_GetHour(), DS3231_GetMinute(), DS3231_GetSecond(), ds3231_dayofweek[DS3231_GetDayOfWeek()-1],
+	DS3231_GetTemperatureInteger(), DS3231_GetTemperatureFraction());
 
-	uint16_t ds3231_time_value = DS3231_GetHour();
-	ds3231_time_value = DS3231_GetMinute();
-	ds3231_time_value = DS3231_GetSecond();
-	HAL_Delay(1000);
-	//Set date.
-	DS3231_SetFullDate(10, 11, 2, 2020);
+	DS3231_PWR_PIN_OFF();			// Put DS3231 into low power mod
+
+}
+
+void BSP_RTC_SetTime(uint8_t hour, uint8_t min, uint8_t sec)
+{
+	DS3231_PWR_PIN_ON();			// Power on RTC
+	HAL_Delay(300);
+
+	DS3231_SetFullTime(hour, min, sec);
+	DS3231_PWR_PIN_OFF();			// Put DS3231 into low power mode
+}
+
+void BSP_RTC_GetTime(uint8_t* p_hour, uint8_t* p_min, uint8_t* p_sec)
+{
+	DS3231_PWR_PIN_ON();			// Power on RTC
+	HAL_Delay(300);
+
+	*p_hour = DS3231_GetHour();
+	*p_min = DS3231_GetMinute();
+	*p_sec = DS3231_GetSecond();
+
+	DS3231_PWR_PIN_OFF();			// Put DS3231 into low power mode
+	
+}
+
+void BSP_RTC_SetDate(uint8_t dayofweek, uint8_t date, uint8_t month, uint16_t year)
+{
+	DS3231_PWR_PIN_ON();			// Power on RTC
+	HAL_Delay(300);
+
+	DS3231_SetFullDate(date, month, dayofweek, year);
+	DS3231_PWR_PIN_OFF();			// Put DS3231 into low power mode
+}
+
+void BSP_RTC_GetDate(uint8_t* p_dayofweek, uint8_t* p_date, uint8_t* p_month, uint16_t* p_year)
+{
+	DS3231_PWR_PIN_ON();			// Power on RTC
+	HAL_Delay(300);
+
+	*p_dayofweek = DS3231_GetDayOfWeek();
+	*p_date = DS3231_GetDate();
+	*p_month = DS3231_GetMonth();
+	*p_year = DS3231_GetYear();
+
+	DS3231_PWR_PIN_OFF();			// Put DS3231 into low power mode
+}
 
 
-	PPRINTF("ISO8601 FORMAT: %04d-%02d-%02dT%02d:%02d:%02d %s %d.%02d\n", 
-		DS3231_GetYear(), DS3231_GetMonth(), DS3231_GetDate(), 
-		DS3231_GetHour(), DS3231_GetMinute(), DS3231_GetSecond(), day[DS3231_GetDayOfWeek()-1],
-		DS3231_GetTemperatureInteger(), DS3231_GetTemperatureFraction());
-
+void Pump_ON(void)
+{
+	HAL_GPIO_WritePin(PUMP_PORT, PUMP_PIN, GPIO_PIN_SET);
 }
 
 void Pump_OFF(void)
 {
 	HAL_GPIO_WritePin(PUMP_PORT, PUMP_PIN, GPIO_PIN_RESET);
-//	PPRINTF("Pump off \r\n");
 }
 
 void BSP_Sensor_Init()

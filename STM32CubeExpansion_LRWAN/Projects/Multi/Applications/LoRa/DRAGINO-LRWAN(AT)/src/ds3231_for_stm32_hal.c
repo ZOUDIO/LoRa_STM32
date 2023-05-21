@@ -7,7 +7,7 @@ extern "C"{
 #endif
 
 I2C_HandleTypeDef *_ds3231_ui2c;
-char *day[7] = { "MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN" };
+char *ds3231_dayofweek[7] = {"SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"};
 
 /**
  * @brief Initializes the DS3231 module. Set clock halt bit to 0 to start timing.

@@ -267,6 +267,14 @@ Maintainer: Miguel Luis and Gregory Cristian
 #define PUMP_PORT                 GPIOB
 #define PUMP_PIN                  GPIO_PIN_13
 
+/* ---------------------------  Custom definition -------------------------------*/
+#define DS3231_PWR_CLK_ENABLE()   __HAL_RCC_GPIOA_CLK_ENABLE()
+#define DS3231_PWR_PORT           GPIOA
+#define DS3231_PWR_PIN            GPIO_PIN_11
+
+#define DS3231_PWR_PIN_ON()       HAL_GPIO_WritePin(DS3231_PWR_PORT, DS3231_PWR_PIN, GPIO_PIN_SET)
+#define DS3231_PWR_PIN_OFF()      HAL_GPIO_WritePin(DS3231_PWR_PORT, DS3231_PWR_PIN, GPIO_PIN_RESET)
+
 /* ---------------------------  +5v PWR OUT definition -------------------------------*/
 #define PWR_OUT_PORT              GPIOB
 #define PWR_OUT_PIN               GPIO_PIN_5
