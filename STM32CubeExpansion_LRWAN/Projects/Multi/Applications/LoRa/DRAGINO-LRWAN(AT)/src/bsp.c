@@ -150,6 +150,8 @@ void BSP_RTC_Init(void)
 	DS3231_GetHour(), DS3231_GetMinute(), DS3231_GetSecond(), ds3231_dayofweek[DS3231_GetDayOfWeek()-1],
 	DS3231_GetTemperatureInteger(), DS3231_GetTemperatureFraction());
 
+
+	BSP_RTC_SyncTime();
 	DS3231_PWR_PIN_OFF();			// Put DS3231 into low power mod
 
 }
@@ -195,6 +197,32 @@ void BSP_RTC_GetDate(uint8_t* p_dayofweek, uint8_t* p_date, uint8_t* p_month, ui
 	*p_month = DS3231_GetMonth();
 	*p_year = DS3231_GetYear();
 
+	DS3231_PWR_PIN_OFF();			// Put DS3231 into low power mode
+}
+
+//Sync time with the internal RTC of the STM32
+void BSP_RTC_SyncTime(void)
+{
+	uint8_t cur_hour, cur_min, cur_sec;
+	
+	DS3231_PWR_PIN_ON();			// Power on RTC
+	HAL_Delay(300);
+
+	// Set the RTC current date/time
+	RTC_HandleTypeDef* internal_rtc_handle = GetRTCHandle();
+	RTC_TimeTypeDef internal_rtc_time = {
+		.Hours = DS3231_GetHour(),
+		.Minutes = DS3231_GetMinute(),
+		.Seconds = DS3231_GetSecond(),
+	};
+
+	HAL_RTC_SetTime(internal_rtc_handle, &internal_rtc_time, RTC_FORMAT_BIN);
+	HAL_RTC_GetTime(internal_rtc_handle, &internal_rtc_time, RTC_FORMAT_BIN);
+	PPRINTF("\r\n Current internal time: %02d:%02d:%02d\n", internal_rtc_time.Hours,
+															internal_rtc_time.Minutes,
+															internal_rtc_time.Seconds);
+	RTC_DateTypeDef dummy_date = {0};
+	HAL_RTC_GetDate(internal_rtc_handle, &dummy_date, RTC_FORMAT_BIN);
 	DS3231_PWR_PIN_OFF();			// Put DS3231 into low power mode
 }
 

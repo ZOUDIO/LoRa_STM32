@@ -181,6 +181,11 @@ static TimerTime_t HW_RTC_GetCalendarValue(  RTC_DateTypeDef* RTC_DateStruct, RT
 
 /* Exported functions ---------------------------------------------------------*/
 
+RTC_HandleTypeDef* GetRTCHandle(void)
+{
+  return &RtcHandle;
+}
+
 /*!
  * @brief Initializes the RTC timer
  * @note The timer is based on the RTC

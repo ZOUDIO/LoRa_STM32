@@ -142,6 +142,7 @@ void BSP_RTC_SetTime(uint8_t hour, uint8_t min, uint8_t sec);
 void BSP_RTC_GetTime(uint8_t* p_hour, uint8_t* p_min, uint8_t* p_sec);
 void BSP_RTC_SetDate(uint8_t dayofweek, uint8_t date, uint8_t month, uint16_t year);
 void BSP_RTC_GetDate(uint8_t* p_dayofweek, uint8_t* p_date, uint8_t* p_month, uint16_t* p_year);
+void BSP_RTC_SyncTime(void);
 
 #ifdef __cplusplus
 }
