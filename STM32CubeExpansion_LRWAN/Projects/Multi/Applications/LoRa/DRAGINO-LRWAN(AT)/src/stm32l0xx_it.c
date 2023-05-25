@@ -267,7 +267,29 @@ void EXTI4_15_IRQHandler(void)
 
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_8);
 
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_9);
+  // HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_9);
+  if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_9) != RESET)
+  {
+    if (mode == 10)
+    {
+      static uint32_t last_tick = 0;
+      uint32_t cur_tick = HW_RTC_GetTimerValue();
+      // Debouncing for 300 ticks
+      if (cur_tick >= last_tick + 200)
+      {
+        DS3231_PWR_PIN_ON();
+        HAL_Delay(300);
+        if(DS3231_IsAlarm1Triggered())
+        {
+          BSP_RTC_SyncTime();
+          DS3231_ClearAlarm1Flag();
+        }
+        DS3231_PWR_PIN_OFF();       
+      }
+    }
+    __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_9);
+    HAL_GPIO_EXTI_Callback(GPIO_PIN_9);
+  }
 
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_10);
 

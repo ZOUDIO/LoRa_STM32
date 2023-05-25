@@ -138,7 +138,18 @@ void BSP_RTC_Init(void)
 	GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull  = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-  	HW_GPIO_Init(DS3231_PWR_PORT, DS3231_PWR_PIN, &GPIO_InitStruct );
+	HAL_GPIO_Init(DS3231_PWR_PORT, &GPIO_InitStruct );
+
+	// Alarm pin
+	DS3231_INT_CLK_ENABLE();
+	GPIO_InitStruct.Pin = DS3231_INT_PIN;	
+	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(DS3231_INT_PORT, &GPIO_InitStruct);
+	
+	/* EXTI interrupt init*/
+	HAL_NVIC_SetPriority(EXTI4_15_IRQn, 2, 0);
+	HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
 	
 	DS3231_PWR_PIN_ON();			// Power on RTC
 	HAL_Delay(300);
@@ -150,6 +161,13 @@ void BSP_RTC_Init(void)
 	DS3231_GetHour(), DS3231_GetMinute(), DS3231_GetSecond(), ds3231_dayofweek[DS3231_GetDayOfWeek()-1],
 	DS3231_GetTemperatureInteger(), DS3231_GetTemperatureFraction());
 
+	// Set alarm 1 to trigger every week at 00:01:00 on Monday
+	DS3231_EnableAlarm1(DS3231_ENABLED);
+	DS3231_SetAlarm1Mode(DS3231_A1_MATCH_S_M_H_DAY);
+	DS3231_SetAlarm1Second(0);
+	DS3231_SetAlarm1Minute(0);
+	DS3231_SetAlarm1Hour(1);
+	DS3231_SetAlarm1Date(DS3231_MONDAY);
 
 	BSP_RTC_SyncTime();
 	DS3231_PWR_PIN_OFF();			// Put DS3231 into low power mod
@@ -205,9 +223,6 @@ void BSP_RTC_SyncTime(void)
 {
 	uint8_t cur_hour, cur_min, cur_sec;
 	
-	DS3231_PWR_PIN_ON();			// Power on RTC
-	HAL_Delay(300);
-
 	// Set the RTC current date/time
 	RTC_HandleTypeDef* internal_rtc_handle = GetRTCHandle();
 	RTC_TimeTypeDef internal_rtc_time = {
@@ -223,7 +238,6 @@ void BSP_RTC_SyncTime(void)
 															internal_rtc_time.Seconds);
 	RTC_DateTypeDef dummy_date = {0};
 	HAL_RTC_GetDate(internal_rtc_handle, &dummy_date, RTC_FORMAT_BIN);
-	DS3231_PWR_PIN_OFF();			// Put DS3231 into low power mode
 }
 
 
@@ -275,8 +289,7 @@ void BSP_Pump_Init()
 	GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull  = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-
-  	HW_GPIO_Init(PUMP_PORT, PUMP_PIN, &GPIO_InitStruct );
+	HAL_GPIO_Init(PUMP_PORT, &GPIO_InitStruct);
 	HAL_GPIO_WritePin(PUMP_PORT, PUMP_PIN, GPIO_PIN_RESET);
 
 	// Timer
