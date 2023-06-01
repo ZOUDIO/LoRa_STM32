@@ -176,10 +176,16 @@ void BSP_RTC_Init(void)
 
 void BSP_RTC_SetTime(uint8_t hour, uint8_t min, uint8_t sec)
 {
+	if(hour > 23 || min > 59 || sec > 59)
+	{
+		PPRINTF("Invalid time input!\r\n");
+		return;
+	}
 	DS3231_PWR_PIN_ON();			// Power on RTC
 	HAL_Delay(300);
 
 	DS3231_SetFullTime(hour, min, sec);
+	BSP_RTC_SyncTime();
 	DS3231_PWR_PIN_OFF();			// Put DS3231 into low power mode
 }
 
@@ -198,6 +204,11 @@ void BSP_RTC_GetTime(uint8_t* p_hour, uint8_t* p_min, uint8_t* p_sec)
 
 void BSP_RTC_SetDate(uint8_t dayofweek, uint8_t date, uint8_t month, uint16_t year)
 {
+	if(dayofweek > 7 || date > 31 || month > 12 || year > 2099)
+	{
+		PRINTF("Invalid date/time input \r\n");
+		return;
+	}
 	DS3231_PWR_PIN_ON();			// Power on RTC
 	HAL_Delay(300);
 
@@ -221,8 +232,6 @@ void BSP_RTC_GetDate(uint8_t* p_dayofweek, uint8_t* p_date, uint8_t* p_month, ui
 //Sync time with the internal RTC of the STM32
 void BSP_RTC_SyncTime(void)
 {
-	uint8_t cur_hour, cur_min, cur_sec;
-	
 	// Set the RTC current date/time
 	RTC_HandleTypeDef* internal_rtc_handle = GetRTCHandle();
 	RTC_TimeTypeDef internal_rtc_time = {
