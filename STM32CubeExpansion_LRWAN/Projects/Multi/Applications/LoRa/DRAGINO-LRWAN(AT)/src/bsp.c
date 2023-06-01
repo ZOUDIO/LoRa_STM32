@@ -106,6 +106,11 @@ extern uint8_t inmode,inmode2,inmode3;
 extern uint16_t power_time;
 extern uint32_t COUNT,COUNT2;
 
+time_boundaries_t time_low_limit = {0, 0};
+time_boundaries_t time_high_limit = {0, 0};
+bool is_timelimit_active = false;
+
+
 /**
  * @brief  Init the DS3231 with VCC pin <-> PB14
  */
@@ -247,6 +252,47 @@ void BSP_RTC_SyncTime(void)
 															internal_rtc_time.Seconds);
 	RTC_DateTypeDef dummy_date = {0};
 	HAL_RTC_GetDate(internal_rtc_handle, &dummy_date, RTC_FORMAT_BIN);
+}
+
+// Get time from the internal RTC of the STM32
+void BSP_RTC_GetInternalTime(uint8_t* p_hour, uint8_t* p_min, uint8_t* p_sec)
+{
+	RTC_HandleTypeDef* internal_rtc_handle = GetRTCHandle();
+	RTC_TimeTypeDef internal_rtc_time = {0};
+	HAL_RTC_GetTime(internal_rtc_handle, &internal_rtc_time, RTC_FORMAT_BIN);
+	*p_hour = internal_rtc_time.Hours;
+	*p_min = internal_rtc_time.Minutes;
+	*p_sec = internal_rtc_time.Seconds;
+}
+
+bool Is_Time_In_Boundaries()
+{
+	uint8_t cur_hour, cur_min, cur_sec;
+	BSP_RTC_GetInternalTime(&cur_hour, &cur_min, &cur_sec);
+	if(cur_hour >= time_low_limit.set_hour && cur_hour <= time_high_limit.set_hour)
+	{
+		if(cur_min >= time_low_limit.set_minute && cur_min <= time_high_limit.set_minute)
+		return true;
+	}
+	return false;
+}
+
+bool Set_Time_Low_Limit(uint8_t hour, uint8_t min)
+{
+	if(hour > 23 || min > 59)
+		return false;
+	time_low_limit.set_hour = hour;
+	time_low_limit.set_minute = min;
+	return true;
+}
+
+bool Set_Time_High_Limit(uint8_t hour, uint8_t min)
+{
+	if(hour > 23 || min > 59)
+		return false;
+	time_high_limit.set_hour = hour;
+	time_high_limit.set_minute = min;
+	return true;
 }
 
 

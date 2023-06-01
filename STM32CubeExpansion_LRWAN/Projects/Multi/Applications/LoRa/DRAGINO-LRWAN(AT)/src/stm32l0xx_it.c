@@ -305,11 +305,13 @@ void EXTI4_15_IRQHandler(void)
       // Debouncing for 500 ticks
       if (cur_tick >= last_tick + 500)
       {
-        
-        COUNT3++;
-        TimerSetValue(&OffPumpTimer, pump_off_ms); // Set timeout for 2s
-        TimerStart(&OffPumpTimer);
-        Pump_ON();
+        if((is_timelimit_active == false) || (Is_Time_In_Boundaries() == true))
+        {
+          COUNT3++;
+          TimerSetValue(&OffPumpTimer, pump_off_ms); // Set timeout for 2s
+          TimerStart(&OffPumpTimer);
+          Pump_ON();
+        }
         last_tick = cur_tick;
       }
     }

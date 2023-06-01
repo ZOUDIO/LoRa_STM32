@@ -1379,6 +1379,38 @@ static void LORA_RxData(lora_AppData_t *AppData)
 		}
 		break;
 	}
+	// Setting time boundary for pump
+	case 0x35:
+	{
+		if( AppData->BuffSize == 5 ) //----> Adjusting pump-timeout
+		{
+			// if data receive = 0xFFFFFFFF -> Turn off time limit control
+			if ( (AppData->Buff[1] == 0xFF)  && 
+				 (AppData->Buff[2] == 0xFF)  &&
+				 (AppData->Buff[3] == 0xFF)  &&
+				 (AppData->Buff[4] == 0xFF) )
+			{
+				is_timelimit_active = false;
+				PRINTF("Turn off time limit control\n\r");
+			}
+			else
+			{
+				if ( (Set_Time_Low_Limit(AppData->Buff[1], AppData->Buff[2]) ) &&
+				 	 (Set_Time_High_Limit(AppData->Buff[3], AppData->Buff[4])) )
+				{
+					is_timelimit_active = true;
+					PRINTF("Set time limit: %d:%d - %d:%d\n\r", AppData->Buff[1], AppData->Buff[2],
+											AppData->Buff[3], AppData->Buff[4]);
+				}
+
+			}
+		}
+		else
+		{
+			PRINTF("Invalid data format\n\r");
+		}
+		break;
+	}
 
 	default:
 		break;

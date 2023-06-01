@@ -113,9 +113,15 @@ typedef struct{
 	
 } device_t;
 
+typedef struct{
+	uint8_t set_hour;
+	uint8_t set_minute;
+}time_boundaries_t;
+
 /* Exported constants --------------------------------------------------------*/
 /* External variables --------------------------------------------------------*/
 extern TimerEvent_t OffPumpTimer;
+extern bool is_timelimit_active;
 /* Exported macros -----------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */ 
 /**
@@ -143,6 +149,9 @@ void BSP_RTC_GetTime(uint8_t* p_hour, uint8_t* p_min, uint8_t* p_sec);
 void BSP_RTC_SetDate(uint8_t dayofweek, uint8_t date, uint8_t month, uint16_t year);
 void BSP_RTC_GetDate(uint8_t* p_dayofweek, uint8_t* p_date, uint8_t* p_month, uint16_t* p_year);
 void BSP_RTC_SyncTime(void);
+bool Is_Time_In_Boundaries();
+bool Set_Time_Low_Limit(uint8_t hour, uint8_t min);
+bool Set_Time_High_Limit(uint8_t hour, uint8_t min);
 
 #ifdef __cplusplus
 }
