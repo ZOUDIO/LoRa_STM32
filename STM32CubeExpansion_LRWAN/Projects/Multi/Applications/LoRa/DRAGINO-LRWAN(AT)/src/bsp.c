@@ -265,7 +265,8 @@ void BSP_RTC_GetInternalTime(uint8_t* p_hour, uint8_t* p_min, uint8_t* p_sec)
 bool Is_Time_In_Boundaries(void)
 {
 	uint8_t cur_hour, cur_min, cur_sec;
-	BSP_RTC_GetInternalTime(&cur_hour, &cur_min, &cur_sec);
+	cur_hour = DS3231_GetHour();
+	cur_min = DS3231_GetMinute();
 	if(cur_hour >= time_low_limit.set_hour && cur_hour <= time_high_limit.set_hour)
 	{
 		if(cur_min >= time_low_limit.set_minute && cur_min <= time_high_limit.set_minute)

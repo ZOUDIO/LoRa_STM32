@@ -71,7 +71,7 @@ Maintainer: Miguel Luis and Gregory Cristian
 
 /* Includes ------------------------------------------------------------------*/
 /* Defines ------------------------------------------------------------------*/
-#define DS3231_ALWAYS_POWERED	  0
+#define DS3231_ALWAYS_POWERED	  1
 #define DS3231_USED_INTERRUPT 	0
 
 #if DS3231_ALWAYS_POWERED
