@@ -267,6 +267,16 @@ Maintainer: Miguel Luis and Gregory Cristian
 #define PUMP_PORT                 GPIOB
 #define PUMP_PIN                  GPIO_PIN_12
 
+
+#define LED_RED_CLK_ENABLE()      __HAL_RCC_GPIOB_CLK_ENABLE()
+#define LED_RED_PORT              GPIOB
+#define LED_RED_PIN               GPIO_PIN_13
+
+#define LED_BLUE_CLK_ENABLE()      __HAL_RCC_GPIOB_CLK_ENABLE()
+#define LED_BLUE_PORT              GPIOB
+#define LED_BLUE_PIN               GPIO_PIN_15
+
+
 /* ---------------------------  Custom definition -------------------------------*/
 #define DS3231_INT_CLK_ENABLE()   __HAL_RCC_GPIOA_CLK_ENABLE()
 #define DS3231_INT_PORT           GPIOA

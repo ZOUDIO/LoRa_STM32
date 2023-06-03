@@ -342,6 +342,28 @@ void BSP_Button_Init()
 	HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
 }
 
+void BSP_LEDs_Init()
+{
+	GPIO_InitTypeDef GPIO_InitStruct={0};
+	LED_RED_CLK_ENABLE();
+	LED_BLUE_CLK_ENABLE();
+
+	GPIO_InitStruct.Pin = LED_RED_PIN;
+	GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull  = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+	HAL_GPIO_Init(LED_RED_PORT, &GPIO_InitStruct);
+	HAL_GPIO_WritePin(LED_RED_PORT, LED_RED_PIN, GPIO_PIN_RESET);
+
+	GPIO_InitStruct.Pin = LED_BLUE_PIN;
+	GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull  = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+	HAL_GPIO_Init(LED_BLUE_PORT, &GPIO_InitStruct);
+	HAL_GPIO_WritePin(LED_BLUE_PORT, LED_BLUE_PIN, GPIO_PIN_RESET);
+
+}
+
 void BSP_Pump_Init()
 {
 	GPIO_InitTypeDef GPIO_InitStruct={0};
@@ -871,10 +893,15 @@ void BSP_sensor_Init(void)
   else if (mode == 10)
   {
 		PPRINTF("\n\r Mode 10 init \r\n");
+		BSP_LEDs_Init();
 		BSP_Sensor_Init();
 		BSP_Button_Init();
 		BSP_Pump_Init();
 		BSP_RTC_Init();
+
+		// LED RED Initial On
+		HAL_GPIO_WritePin(LED_RED_PORT, LED_RED_PIN, GPIO_PIN_SET);
+
   }
 //   GPIO_EXTI14_IoInit(inmode);
   GPIO_INPUT_IoInit();
