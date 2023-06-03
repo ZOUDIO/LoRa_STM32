@@ -33,6 +33,22 @@ In file Projects/Multi/Applications/LoRa/DRAGINO-LRWAN(AT)/inc/hw_conf.h
 | value        |  0x34          | New pump off timer|
 
 Ex: To set pump time off to 5000ms (5s) -> 0x34 0x00 0x00 0x13 0x18 
+
+## AT commands to time for DS3231
+Set time → AT+TIME=HH,MM,SS
+
+Set date→  AT+DATE=D,DD,MM,YY (D = Day = Sunday -Saturday ~ 1-7)
+
+
+## Setting the time boudaries for pump
+0x35 HH_low MM_low HH_high MM_high
+| Size (bytes) |    1           |        1           |    1           |        1          |        1          |
+|--------------|----------------|--------------------|----------------|-------------------|-------------------
+| value        |  0x35          | Hour low limit     | Min low limit  | Hour high limit   | Min high limit    |
+
+Ex: Set the time boundaries so that the pump can only be turned on at 10:10-11:15
+-> Downlink: 0x35 10 10 11 15
+
 ## Note
 > Current implementation will prevent changing to other working mode and force to run in mode 10 after reset
 
