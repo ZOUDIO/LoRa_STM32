@@ -259,7 +259,16 @@ void EXTI4_15_IRQHandler(void)
     HAL_GPIO_EXTI_Callback(GPIO_PIN_4);
   }
 
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_5);
+  // HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_5);
+  if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_5) != RESET)
+  {
+    if (mode == 10)
+    {
+        COUNT3 = 0;
+    }
+    __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_5);
+    HAL_GPIO_EXTI_Callback(GPIO_PIN_5);
+  }
 
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_6);
 
@@ -278,7 +287,6 @@ void EXTI4_15_IRQHandler(void)
       if (cur_tick >= last_tick + 200)
       {
         DS3231_PWR_PIN_ON();
-        HAL_Delay(300);
         if(DS3231_IsAlarm1Triggered())
         {
           BSP_RTC_SyncTime();
@@ -295,8 +303,12 @@ void EXTI4_15_IRQHandler(void)
 
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_11);
 
-  // HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_12 );
-  if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_12) != RESET)
+  HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_12 );
+
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
+
+  //  HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_14 );
+  if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_14) != RESET)
   {
     if (mode == 10)
     {
@@ -315,15 +327,6 @@ void EXTI4_15_IRQHandler(void)
         last_tick = cur_tick;
       }
     }
-    __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_12);
-    HAL_GPIO_EXTI_Callback(GPIO_PIN_12);
-  }
-
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
-
-  //  HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_14 );
-  if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_14) != RESET)
-  {
     if ((inmode != 0) && (join_network == 1))
     {
       if (((mode == 6) || (mode == 9)) && ((inmode == 2) || (inmode == 3)))
@@ -356,10 +359,6 @@ void EXTI4_15_IRQHandler(void)
         exti_flag2 = 1;
         COUNT2++;
       }
-    }
-    if (mode == 10)
-    {
-        COUNT3 = 0;
     }
     __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_15);
     HAL_GPIO_EXTI_Callback(GPIO_PIN_15);

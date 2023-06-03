@@ -136,6 +136,7 @@ void BSP_RTC_Init(void)
 	/* Enable the Analog I2C Filter */
 	HAL_I2CEx_ConfigAnalogFilter(&I2cHandle3,I2C_ANALOGFILTER_ENABLE);
 
+	#if !DS3231_ALWAYS_POWERED
 	// Init PWR pin for DS3231
 	GPIO_InitTypeDef GPIO_InitStruct={0};
 	DS3231_PWR_CLK_ENABLE();
@@ -144,7 +145,16 @@ void BSP_RTC_Init(void)
 	GPIO_InitStruct.Pull  = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
 	HAL_GPIO_Init(DS3231_PWR_PORT, &GPIO_InitStruct );
+	DS3231_PWR_PIN_ON();			// Power on RTC
+	#endif /* End of !DS3231_ALWAY_POWER */
 
+	DS3231_Init(&I2cHandle3);
+	PPRINTF("\r\n Date: %04d-%02d-%02d \n Time: %02d:%02d:%02d %s %d.%02d\n", 
+	DS3231_GetYear(), DS3231_GetMonth(), DS3231_GetDate(), 
+	DS3231_GetHour(), DS3231_GetMinute(), DS3231_GetSecond(), ds3231_dayofweek[DS3231_GetDayOfWeek()-1],
+	DS3231_GetTemperatureInteger(), DS3231_GetTemperatureFraction());
+
+	#if DS3231_USE_INTERRUPT
 	// Alarm pin
 	DS3231_INT_CLK_ENABLE();
 	GPIO_InitStruct.Pin = DS3231_INT_PIN;	
@@ -155,16 +165,6 @@ void BSP_RTC_Init(void)
 	/* EXTI interrupt init*/
 	HAL_NVIC_SetPriority(EXTI4_15_IRQn, 2, 0);
 	HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
-	
-	DS3231_PWR_PIN_ON();			// Power on RTC
-	HAL_Delay(300);
-
-	DS3231_Init(&I2cHandle3);
-	
-	PPRINTF("\r\n Date: %04d-%02d-%02d \n Time: %02d:%02d:%02d %s %d.%02d\n", 
-	DS3231_GetYear(), DS3231_GetMonth(), DS3231_GetDate(), 
-	DS3231_GetHour(), DS3231_GetMinute(), DS3231_GetSecond(), ds3231_dayofweek[DS3231_GetDayOfWeek()-1],
-	DS3231_GetTemperatureInteger(), DS3231_GetTemperatureFraction());
 
 	// Set alarm 1 to trigger every week at 00:01:00 on Monday
 	DS3231_EnableAlarm1(DS3231_ENABLED);
@@ -173,6 +173,7 @@ void BSP_RTC_Init(void)
 	DS3231_SetAlarm1Minute(0);
 	DS3231_SetAlarm1Hour(1);
 	DS3231_SetAlarm1Date(DS3231_MONDAY);
+	#endif /* End of DS3231_USE_INTERRUPT */
 
 	BSP_RTC_SyncTime();
 	DS3231_PWR_PIN_OFF();			// Put DS3231 into low power mod
@@ -187,7 +188,6 @@ void BSP_RTC_SetTime(uint8_t hour, uint8_t min, uint8_t sec)
 		return;
 	}
 	DS3231_PWR_PIN_ON();			// Power on RTC
-	HAL_Delay(300);
 
 	DS3231_SetFullTime(hour, min, sec);
 	BSP_RTC_SyncTime();
@@ -197,7 +197,6 @@ void BSP_RTC_SetTime(uint8_t hour, uint8_t min, uint8_t sec)
 void BSP_RTC_GetTime(uint8_t* p_hour, uint8_t* p_min, uint8_t* p_sec)
 {
 	DS3231_PWR_PIN_ON();			// Power on RTC
-	HAL_Delay(300);
 
 	*p_hour = DS3231_GetHour();
 	*p_min = DS3231_GetMinute();
@@ -215,7 +214,6 @@ void BSP_RTC_SetDate(uint8_t dayofweek, uint8_t date, uint8_t month, uint16_t ye
 		return;
 	}
 	DS3231_PWR_PIN_ON();			// Power on RTC
-	HAL_Delay(300);
 
 	DS3231_SetFullDate(date, month, dayofweek, year);
 	DS3231_PWR_PIN_OFF();			// Put DS3231 into low power mode
@@ -224,7 +222,6 @@ void BSP_RTC_SetDate(uint8_t dayofweek, uint8_t date, uint8_t month, uint16_t ye
 void BSP_RTC_GetDate(uint8_t* p_dayofweek, uint8_t* p_date, uint8_t* p_month, uint16_t* p_year)
 {
 	DS3231_PWR_PIN_ON();			// Power on RTC
-	HAL_Delay(300);
 
 	*p_dayofweek = DS3231_GetDayOfWeek();
 	*p_date = DS3231_GetDate();
@@ -265,7 +262,7 @@ void BSP_RTC_GetInternalTime(uint8_t* p_hour, uint8_t* p_min, uint8_t* p_sec)
 	*p_sec = internal_rtc_time.Seconds;
 }
 
-bool Is_Time_In_Boundaries()
+bool Is_Time_In_Boundaries(void)
 {
 	uint8_t cur_hour, cur_min, cur_sec;
 	BSP_RTC_GetInternalTime(&cur_hour, &cur_min, &cur_sec);
@@ -309,9 +306,18 @@ void Pump_OFF(void)
 void BSP_Sensor_Init()
 {
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
+	__HAL_RCC_GPIOA_CLK_ENABLE();
 	__HAL_RCC_GPIOB_CLK_ENABLE();
 
-	GPIO_InitStruct.Pin = GPIO_PIN_12;	
+
+	/* PROX_EN (PA10) pin as input */
+	GPIO_InitStruct.Pin = GPIO_PIN_10;	
+	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+	/* PROX_SIGNAL_3V3 PB14 as interrupt input */
+	GPIO_InitStruct.Pin = GPIO_PIN_14;	
 	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
 	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
 	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
@@ -326,7 +332,7 @@ void BSP_Button_Init()
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
 	__HAL_RCC_GPIOB_CLK_ENABLE();
 
-	GPIO_InitStruct.Pin = GPIO_PIN_15;	
+	GPIO_InitStruct.Pin = GPIO_PIN_5;	
 	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
 	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
 	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
@@ -870,7 +876,7 @@ void BSP_sensor_Init(void)
 		BSP_Pump_Init();
 		BSP_RTC_Init();
   }
-  GPIO_EXTI14_IoInit(inmode);
+//   GPIO_EXTI14_IoInit(inmode);
   GPIO_INPUT_IoInit();
 
 #endif

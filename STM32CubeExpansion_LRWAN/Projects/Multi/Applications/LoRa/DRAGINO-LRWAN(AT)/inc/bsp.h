@@ -70,6 +70,20 @@ Maintainer: Miguel Luis and Gregory Cristian
 #include "timeServer.h"
 
 /* Includes ------------------------------------------------------------------*/
+/* Defines ------------------------------------------------------------------*/
+#define DS3231_ALWAYS_POWERED	  0
+#define DS3231_USED_INTERRUPT 	0
+
+#if DS3231_ALWAYS_POWERED
+#define DS3231_PWR_PIN_ON()       (void)0
+#define DS3231_PWR_PIN_OFF()      (void)0
+#else
+#define DS3231_PWR_PIN_ON()       HAL_GPIO_WritePin(DS3231_PWR_PORT, DS3231_PWR_PIN, GPIO_PIN_SET); \
+                                  HAL_Delay(300);
+
+#define DS3231_PWR_PIN_OFF()      HAL_GPIO_WritePin(DS3231_PWR_PORT, DS3231_PWR_PIN, GPIO_PIN_RESET)
+#endif /* End of DS3231_ALWAYS_POWERED */
+
 /* Exported types ------------------------------------------------------------*/
 
 typedef struct{
@@ -149,7 +163,7 @@ void BSP_RTC_GetTime(uint8_t* p_hour, uint8_t* p_min, uint8_t* p_sec);
 void BSP_RTC_SetDate(uint8_t dayofweek, uint8_t date, uint8_t month, uint16_t year);
 void BSP_RTC_GetDate(uint8_t* p_dayofweek, uint8_t* p_date, uint8_t* p_month, uint16_t* p_year);
 void BSP_RTC_SyncTime(void);
-bool Is_Time_In_Boundaries();
+bool Is_Time_In_Boundaries(void);
 bool Set_Time_Low_Limit(uint8_t hour, uint8_t min);
 bool Set_Time_High_Limit(uint8_t hour, uint8_t min);
 
