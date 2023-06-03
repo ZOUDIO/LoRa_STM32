@@ -899,8 +899,9 @@ void BSP_sensor_Init(void)
 		BSP_Pump_Init();
 		BSP_RTC_Init();
 
-		// LED RED Initial On
-		HAL_GPIO_WritePin(LED_RED_PORT, LED_RED_PIN, GPIO_PIN_SET);
+		// LEDs initial state
+		LED_RED_ON();
+		LED_BLUE_OFF();
 
   }
 //   GPIO_EXTI14_IoInit(inmode);

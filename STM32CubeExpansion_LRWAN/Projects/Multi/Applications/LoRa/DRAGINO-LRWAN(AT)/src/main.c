@@ -1573,7 +1573,7 @@ static void OnNetworkJoinedLedEvent(void)
 {
 	TimerStop(&NetworkJoinedLedTimer);
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(LED_RED_PORT, LED_RED_PIN, GPIO_PIN_RESET);
+	LED_RED_OFF();
 	joined_led_end = 0;
 }
 

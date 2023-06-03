@@ -46,6 +46,7 @@ Set date→  AT+DATE=D,DD,MM,YY (D = Day = Sunday -Saturday ~ 1-7)
 |--------------|----------------|--------------------|----------------|-------------------|-------------------
 | value        |  0x35          | Hour low limit     | Min low limit  | Hour high limit   | Min high limit    |
 
+Note: Send 0x35 FF FF FF FF to turn off the time boundaries
 Ex: Set the time boundaries so that the pump can only be turned on at 10:10-11:15
 -> Downlink: 0x35 10 10 11 15
 
