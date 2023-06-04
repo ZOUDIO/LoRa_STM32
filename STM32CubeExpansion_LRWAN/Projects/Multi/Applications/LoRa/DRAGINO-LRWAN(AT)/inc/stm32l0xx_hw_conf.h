@@ -263,6 +263,8 @@ Maintainer: Miguel Luis and Gregory Cristian
 #define ULT_Echo_PIN              GPIO_PIN_11
 
 /* ---------------------------  Custom definition -------------------------------*/
+#define ADC_12V_BAT_CHANNEL       ADC_CHANNEL_0
+
 #define PUMP_CLK_ENABLE()         __HAL_RCC_GPIOB_CLK_ENABLE()
 #define PUMP_PORT                 GPIOB
 #define PUMP_PIN                  GPIO_PIN_12
