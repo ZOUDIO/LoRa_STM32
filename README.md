@@ -21,9 +21,9 @@ In file Projects/Multi/Applications/LoRa/DRAGINO-LRWAN(AT)/inc/hw_conf.h
 - Pump pin: PB13 - Output
 
 ## Uplink package format
-| Size (bytes) |    2           |        4          |
-|--------------|----------------|--------------------
-| value        |  Battery (mV)  | Counter           |
+| Size (bytes) |    2               |        4          |
+|--------------|--------------------|--------------------
+| value        |  12 VBattery (mV)  | Counter           |
 
 
 ## Adjusting pump-timeout (will reset to default value ~2s if the MCU is reset)
@@ -36,7 +36,6 @@ Ex: To set pump time off to 5000ms (5s) -> 0x34 0x00 0x00 0x13 0x18
 
 ## AT commands to time for DS3231
 Set time → AT+TIME=HH,MM,SS
-
 Set date→  AT+DATE=D,DD,MM,YY (D = Day = Sunday -Saturday ~ 1-7)
 
 
@@ -50,13 +49,19 @@ Note: Send 0x35 FF FF FF FF to turn off the time boundaries
 Ex: Set the time boundaries so that the pump can only be turned on at 10:10-11:15
 -> Downlink: 0x35 10 10 11 15
 
-## Note
+## Version 1.8.2
+## Pin used
+- Button pin: PB5- Pull-down internally, input interrupt with rising edge
+- PROX_SIGNAL_3V3 pin: PB14 - Pull-down internally, input interrupt with rising edge
+- PROX_EN pin: PA10 - Input
+- Pump pin: PB12 - Output
+- LED RED pin: PB13 - Output active low
+- LED BLUE pin: PB15 - Output active low
+- LED GREEN pin: PA8 - Output (RADIO ANT SWTICH)
+
+
+## Improvements
 > Current implementation will prevent changing to other working mode and force to run in mode 10 after reset
-
-
-	
-	
-
 
 
 
