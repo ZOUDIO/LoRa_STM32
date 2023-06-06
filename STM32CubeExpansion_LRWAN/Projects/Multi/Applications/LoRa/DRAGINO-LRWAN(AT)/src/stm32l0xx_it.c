@@ -313,11 +313,10 @@ void EXTI4_15_IRQHandler(void)
   {
     if (mode == 10)
     {
-      PRINTF("Sensor active\r\n");
       static uint32_t last_tick = 0;
       uint32_t cur_tick = HW_RTC_GetTimerValue();
       // Debouncing for 500 ticks
-      if (cur_tick >= last_tick + 500)
+      if (cur_tick >= last_tick + HW_RTC_ms2Tick(500))
       {
         if((is_timelimit_active == false) || (Is_Time_In_Boundaries() == true))
         {
