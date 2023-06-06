@@ -301,11 +301,13 @@ bool Set_Time_High_Limit(uint8_t hour, uint8_t min)
 void Pump_ON(void)
 {
 	HAL_GPIO_WritePin(PUMP_PORT, PUMP_PIN, GPIO_PIN_SET);
+	PRINTF("Pump ON\r\n");
 }
 
 void Pump_OFF(void)
 {
 	HAL_GPIO_WritePin(PUMP_PORT, PUMP_PIN, GPIO_PIN_RESET);
+	PRINTF("Pump OFF\r\n");
 }
 
 void BSP_Sensor_Init()

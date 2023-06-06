@@ -264,6 +264,7 @@ void EXTI4_15_IRQHandler(void)
   {
     if (mode == 10)
     {
+        PRINTF("Reset counter\n\r");
         COUNT3 = 0;
     }
     __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_5);
@@ -312,6 +313,7 @@ void EXTI4_15_IRQHandler(void)
   {
     if (mode == 10)
     {
+      PRINTF("Sensor active\r\n");
       static uint32_t last_tick = 0;
       uint32_t cur_tick = HW_RTC_GetTimerValue();
       // Debouncing for 500 ticks

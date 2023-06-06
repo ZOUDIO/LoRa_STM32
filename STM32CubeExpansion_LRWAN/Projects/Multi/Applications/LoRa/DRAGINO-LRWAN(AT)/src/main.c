@@ -835,6 +835,13 @@ static void Send(void)
 		AppData.Buff[i++] = (uint8_t)(COUNT3);
 	}
 
+	AT_PRINTF("Uplink data:\r\n");
+	for (uint8_t idx = 0; idx < i; idx++)
+	{
+		AT_PRINTF("%02x ", AppData.Buff[idx]);
+	}
+	AT_PRINTF("\n\r===========================\r\n");
+
 	if (exit_temp == 1)
 	{
 		exti_flag = 0;
@@ -932,6 +939,11 @@ static void LORA_RxData(lora_AppData_t *AppData)
 	is_there_data = 1;
 
 	set_at_receive(AppData->Port, AppData->Buff, AppData->BuffSize);
+	for (int i = 0; i < AppData->BuffSize; i++)
+	{
+		AT_PRINTF("%02x ", AppData->Buff[i]);
+	}
+	AT_PRINTF("\n\r===========================\r\n");
 
 	switch (AppData->Buff[0] & 0xff)
 	{
