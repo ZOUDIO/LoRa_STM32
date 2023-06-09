@@ -259,17 +259,17 @@ void EXTI4_15_IRQHandler(void)
     HAL_GPIO_EXTI_Callback(GPIO_PIN_4);
   }
 
-  // HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_5);
-  if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_5) != RESET)
-  {
-    if (mode == 10)
-    {
-        PRINTF("Reset counter\n\r");
-        COUNT3 = 0;
-    }
-    __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_5);
-    HAL_GPIO_EXTI_Callback(GPIO_PIN_5);
-  }
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_5);
+  // if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_5) != RESET)
+  // {
+  //   if (mode == 10)
+  //   {
+  //       PRINTF("Reset counter\n\r");
+  //       COUNT3 = 0;
+  //   }
+  //   __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_5);
+  //   HAL_GPIO_EXTI_Callback(GPIO_PIN_5);
+  // }
 
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_6);
 
@@ -277,15 +277,15 @@ void EXTI4_15_IRQHandler(void)
 
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_8);
 
-  // HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_9);
+  #if DS3231_USED_INTERRUPT
   if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_9) != RESET)
   {
     if (mode == 10)
     {
       static uint32_t last_tick = 0;
       uint32_t cur_tick = HW_RTC_GetTimerValue();
-      // Debouncing for 300 ticks
-      if (cur_tick >= last_tick + 200)
+      // Debouncing for 500ms
+      if (cur_tick >= last_tick +  HW_RTC_ms2Tick(500))
       {
         DS3231_PWR_PIN_ON();
         if(DS3231_IsAlarm1Triggered())
@@ -299,6 +299,9 @@ void EXTI4_15_IRQHandler(void)
     __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_9);
     HAL_GPIO_EXTI_Callback(GPIO_PIN_9);
   }
+  #else
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_9);
+  #endif /* End of DS3231_USED_INTERRUPT */
 
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_10);
 
@@ -315,7 +318,7 @@ void EXTI4_15_IRQHandler(void)
     {
       static uint32_t last_tick = 0;
       uint32_t cur_tick = HW_RTC_GetTimerValue();
-      // Debouncing for 500 ticks
+      // Debouncing for 500 ms
       if (cur_tick >= last_tick + HW_RTC_ms2Tick(500))
       {
         if((is_timelimit_active == false) || (Is_Time_In_Boundaries() == true))
