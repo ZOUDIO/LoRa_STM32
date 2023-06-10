@@ -1619,7 +1619,6 @@ ATEerror_t at_TIME_set(const char *param)
   {
     return AT_PARAM_ERROR;
   }
-  PPRINTF("Set time to %02d:%02d:%02d\r\n", hour, min, sec);
   BSP_RTC_SetTime(hour, min, sec);
   return AT_OK;
 }

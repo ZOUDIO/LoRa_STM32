@@ -234,6 +234,8 @@ void BSP_RTC_GetDate(uint8_t* p_dayofweek, uint8_t* p_date, uint8_t* p_month, ui
 //Sync time with the internal RTC of the STM32
 void BSP_RTC_SyncTime(void)
 {
+	#if DS3231_SYNC_INTERNAL_RTC
+	
 	// Set the RTC current date/time
 	RTC_HandleTypeDef* internal_rtc_handle = GetRTCHandle();
 	RTC_TimeTypeDef internal_rtc_time = {
@@ -249,6 +251,7 @@ void BSP_RTC_SyncTime(void)
 															internal_rtc_time.Seconds);
 	RTC_DateTypeDef dummy_date = {0};
 	HAL_RTC_GetDate(internal_rtc_handle, &dummy_date, RTC_FORMAT_BIN);
+	#endif /* End of DS3231_SYNC_INTERNAL_RTC */
 }
 
 // Get time from the internal RTC of the STM32
