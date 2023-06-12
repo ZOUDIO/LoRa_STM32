@@ -71,8 +71,7 @@ extern uint32_t COUNT, COUNT2;
 extern uint8_t mode;
 extern uint8_t switch_status, switch_status2, switch_status3;
 extern bool join_network;
-extern uint32_t COUNT3; // Presense count
-extern uint32_t pump_off_ms;  
+
 /** @addtogroup STM32L1xx_HAL_Examples
  * @{
  */

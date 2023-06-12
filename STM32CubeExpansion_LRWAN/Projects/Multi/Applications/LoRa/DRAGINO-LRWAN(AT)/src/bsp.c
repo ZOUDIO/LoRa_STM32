@@ -106,8 +106,8 @@ extern uint8_t inmode,inmode2,inmode3;
 extern uint16_t power_time;
 extern uint32_t COUNT,COUNT2;
 
-time_boundaries_t time_low_limit = {0, 0};
-time_boundaries_t time_high_limit = {0, 0};
+time_boundaries_t time_low_limit = {0xFF, 0xFF};
+time_boundaries_t time_high_limit = {0xFF, 0xFF};
 bool is_timelimit_active = false;
 
 
@@ -180,18 +180,19 @@ void BSP_RTC_Init(void)
 
 }
 
-void BSP_RTC_SetTime(uint8_t hour, uint8_t min, uint8_t sec)
+bool BSP_RTC_SetTime(uint8_t hour, uint8_t min, uint8_t sec)
 {
 	if(hour > 23 || min > 59 || sec > 59)
 	{
 		PPRINTF("Invalid time input!\r\n");
-		return;
+		return 0;
 	}
 	DS3231_PWR_PIN_ON();			// Power on RTC
 
 	DS3231_SetFullTime(hour, min, sec);
 	BSP_RTC_SyncTime();
-	DS3231_PWR_PIN_OFF();			// Put DS3231 into low power mode
+	DS3231_PWR_PIN_OFF();		
+	return 1;	// Put DS3231 into low power mode
 }
 
 void BSP_RTC_GetTime(uint8_t* p_hour, uint8_t* p_min, uint8_t* p_sec)
@@ -206,17 +207,18 @@ void BSP_RTC_GetTime(uint8_t* p_hour, uint8_t* p_min, uint8_t* p_sec)
 	
 }
 
-void BSP_RTC_SetDate(uint8_t dayofweek, uint8_t date, uint8_t month, uint16_t year)
+bool BSP_RTC_SetDate(uint8_t dayofweek, uint8_t date, uint8_t month, uint16_t year)
 {
 	if(dayofweek > 7 || date > 31 || month > 12 || year > 2099)
 	{
 		PRINTF("Invalid date/time input \r\n");
-		return;
+		return 0;
 	}
 	DS3231_PWR_PIN_ON();			// Power on RTC
 
 	DS3231_SetFullDate(date, month, dayofweek, year);
 	DS3231_PWR_PIN_OFF();			// Put DS3231 into low power mode
+	return 1;
 }
 
 void BSP_RTC_GetDate(uint8_t* p_dayofweek, uint8_t* p_date, uint8_t* p_month, uint16_t* p_year)
@@ -276,8 +278,12 @@ bool Is_Time_In_Boundaries(void)
 
 	if(cur_hour >= time_low_limit.set_hour && cur_hour <= time_high_limit.set_hour)
 	{
-		if(cur_min >= time_low_limit.set_minute && cur_min <= time_high_limit.set_minute)
+		if((cur_hour == time_low_limit.set_hour && cur_min >= time_low_limit.set_minute) || 
+		(cur_hour == time_high_limit.set_hour && cur_min <= time_high_limit.set_minute) ||
+		(cur_hour > time_low_limit.set_hour && cur_hour < time_high_limit.set_hour))
+		{
 		return true;
+		}
 	}
 	return false;
 }

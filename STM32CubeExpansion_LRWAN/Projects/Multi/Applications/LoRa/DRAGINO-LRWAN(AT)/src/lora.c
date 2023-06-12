@@ -1176,7 +1176,26 @@ void EEPROM_Store_Config(void)
 	s_config[config_count++]=confirmed_uplink_retransmission_nbtrials<<24|confirmed_uplink_counter_retransmission_increment_switch<<16|LinkADR_NbTrans_retransmission_nbtrials<<8|LinkADR_NbTrans_uplink_counter_retransmission_increment_switch;
 	
 	s_config[config_count++]=unconfirmed_uplink_change_to_confirmed_uplink_timeout;	
-	
+
+  PRINTF("config_count=%d\n\r",config_count);
+
+  uint16_t csum=0;
+  uint8_t start_custom_user_data = config_count;
+
+  s_config[config_count++]=COUNT3;
+
+  s_config[config_count++]=pump_off_ms;
+
+  s_config[config_count++]=( (time_low_limit.set_hour<<24) | (time_low_limit.set_minute<<16) |
+                             (time_high_limit.set_hour<<8) | (time_high_limit.set_minute) );
+
+  //calculate checksum
+  for(uint8_t i=start_custom_user_data; i<config_count; i++)
+  {
+    csum += (uint32_t)s_config[i];
+  }
+  s_config[config_count++]=( ((is_timelimit_active & 0xFF) << 16) | (csum & 0xFFFF) );
+
 	EEPROM_program(EEPROM_USER_START_ADDR_CONFIG,s_config,config_count);//store config
 	
 	config_count=0;
@@ -1184,7 +1203,7 @@ void EEPROM_Store_Config(void)
 
 void EEPROM_Read_Config(void)
 {
-	uint32_t star_address=0,r_config[20],r_key[17];
+	uint32_t star_address=0,r_config[24],r_key[17];
 	
 	star_address=EEPROM_USER_START_ADDR_KEY;
 	/* read key*/
@@ -1203,7 +1222,7 @@ void EEPROM_Read_Config(void)
 	
 	
 	star_address=EEPROM_USER_START_ADDR_CONFIG;
-	for(int i=0;i<20;i++)
+	for(int i=0;i<24;i++)
 	{
 	  r_config[i]=FLASH_read(star_address);
 		star_address+=4;
@@ -1326,6 +1345,29 @@ void EEPROM_Read_Config(void)
 	LinkADR_NbTrans_uplink_counter_retransmission_increment_switch=r_config[18]&0xFF;
 	
 	unconfirmed_uplink_change_to_confirmed_uplink_timeout=r_config[19]&0xFFFF;
+
+  // r_config[20] - r_config[23]: custom app data
+  uint16_t csum = 0, csum_cal=0;;
+  for(uint8_t idx = 0; idx< 3; idx++)
+  {
+      csum_cal += r_config[20 + idx];
+  }
+  csum = r_config[23] & 0xFFFF;
+  if(csum != csum_cal)
+  {
+    PRINTF("csum error, cal: %d, read: %d\r\n", csum_cal, csum);
+    return;
+  }
+
+  // COUNT3 = r_config[20];
+  pump_off_ms = r_config[21];
+
+  time_low_limit.set_hour = (r_config[22]>>24)&0xFF;
+  time_low_limit.set_minute = (r_config[22]>>16)&0xFF;
+  time_high_limit.set_hour = (r_config[22]>>8)&0xFF;
+  time_high_limit.set_minute = (r_config[22])&0xFF;
+
+  is_timelimit_active = (r_config[23]>>16)&0xFF;
 }
 
 uint16_t string_touint(void)

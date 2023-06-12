@@ -1402,6 +1402,8 @@ static void LORA_RxData(lora_AppData_t *AppData)
 			// Update new pump-off timeout
 			pump_off_ms = AppData->Buff[1] << 24 | AppData->Buff[2] << 16 |
 							   AppData->Buff[3] << 8 | AppData->Buff[4];
+			EEPROM_Store_Config();
+			PRINTF("Set pump time to %d ms\n\r", pump_off_ms);
 		}
 		break;
 	}
@@ -1417,6 +1419,7 @@ static void LORA_RxData(lora_AppData_t *AppData)
 				 (AppData->Buff[4] == 0xFF) )
 			{
 				is_timelimit_active = false;
+				EEPROM_Store_Config();
 				PRINTF("Turn off time limit control\n\r");
 			}
 			else
@@ -1425,6 +1428,7 @@ static void LORA_RxData(lora_AppData_t *AppData)
 				 	 (Set_Time_High_Limit(AppData->Buff[3], AppData->Buff[4])) )
 				{
 					is_timelimit_active = true;
+					EEPROM_Store_Config();
 					PRINTF("Set time limit: %d:%d - %d:%d\n\r", AppData->Buff[1], AppData->Buff[2],
 											AppData->Buff[3], AppData->Buff[4]);
 				}

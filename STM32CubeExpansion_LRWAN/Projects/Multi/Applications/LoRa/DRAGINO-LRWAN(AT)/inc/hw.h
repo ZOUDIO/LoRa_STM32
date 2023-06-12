@@ -76,6 +76,7 @@ Maintainer: Miguel Luis and Gregory Cristian
 #include "hw_msp.h"
 #include "debug.h"
 #include "trace.h"
+#include "bsp.h"
 	 
 	 typedef enum
 {
