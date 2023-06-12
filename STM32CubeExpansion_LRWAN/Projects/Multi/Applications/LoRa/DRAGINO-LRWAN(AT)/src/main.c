@@ -274,6 +274,19 @@ int main(void)
 	/* Configure the Lora Stack*/
 	LORA_Init(&LoRaMainCallbacks, &LoRaParamInit);
 
+	#if DEBUG
+	PRINTF("Current counter value: %d \n, Pump on time: %d \n, uplink period %d", COUNT3, pump_off_ms, APP_TX_DUTYCYCLE);
+	if(is_timelimit_active)
+	{
+		PRINTF("Current time boundaries: %02d:%02d - %02d:%02d \r\n", time_low_limit.set_hour, time_low_limit.set_minute,
+																	time_high_limit.set_hour, time_high_limit.set_minute);
+	}
+	else
+	{
+		PRINTF("Time boundaries are not set \r\n");
+	}
+	#endif /* End of DEBUG */
+			
 	while (1)
 	{
 		/* Handle UART commands */
@@ -289,6 +302,7 @@ int main(void)
 			{
 				PRINTF("Reset button pressed\r\n");
 				COUNT3 = 0;
+				last_tick = cur_tick;	
 			}
 		}
 		

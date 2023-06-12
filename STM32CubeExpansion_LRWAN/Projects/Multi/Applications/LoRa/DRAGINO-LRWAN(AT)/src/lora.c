@@ -1177,7 +1177,7 @@ void EEPROM_Store_Config(void)
 	
 	s_config[config_count++]=unconfirmed_uplink_change_to_confirmed_uplink_timeout;	
 
-  PRINTF("config_count=%d\n\r",config_count);
+  PRINTF("Store config to EEPROM\n\r");
 
   uint16_t csum=0;
   uint8_t start_custom_user_data = config_count;
