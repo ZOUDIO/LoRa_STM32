@@ -259,16 +259,23 @@ void EXTI4_15_IRQHandler(void)
   }
 
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_5);
-  // if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_5) != RESET)
-  // {
-  //   if (mode == 10)
-  //   {
-  //       PRINTF("Reset counter\n\r");
-  //       COUNT3 = 0;
-  //   }
-  //   __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_5);
-  //   HAL_GPIO_EXTI_Callback(GPIO_PIN_5);
-  // }
+  if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_5) != RESET)
+  {
+    if (mode == 10)
+    {
+      static uint32_t last_tick = 0;
+      uint32_t cur_tick = HW_RTC_GetTimerValue();
+      // Debouncing for 500 ms
+      if (cur_tick >= last_tick + HW_RTC_ms2Tick(500))
+      {
+          PRINTF("Reset counter\n\r");
+          COUNT3 = 0;
+          last_tick = cur_tick;
+      }
+    }
+    __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_5);
+    HAL_GPIO_EXTI_Callback(GPIO_PIN_5);
+  }
 
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_6);
 
