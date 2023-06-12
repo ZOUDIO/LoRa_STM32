@@ -1179,8 +1179,6 @@ void EEPROM_Store_Config(void)
 
   PRINTF("Store config to EEPROM\n\r");
 
-  uint16_t csum=0;
-  uint8_t start_custom_user_data = config_count;
 
   s_config[config_count++]=COUNT3;
 
@@ -1188,9 +1186,10 @@ void EEPROM_Store_Config(void)
 
   s_config[config_count++]=( (time_low_limit.set_hour<<24) | (time_low_limit.set_minute<<16) |
                              (time_high_limit.set_hour<<8) | (time_high_limit.set_minute) );
+  uint16_t csum=0;
 
   //calculate checksum
-  for(uint8_t i=start_custom_user_data; i<config_count; i++)
+  for(uint8_t i=0; i<config_count; i++)
   {
     csum += (uint32_t)s_config[i];
   }
@@ -1348,9 +1347,9 @@ void EEPROM_Read_Config(void)
 
   // r_config[20] - r_config[23]: custom app data
   uint16_t csum = 0, csum_cal=0;;
-  for(uint8_t idx = 0; idx< 3; idx++)
+  for(uint8_t idx = 0; idx< 23; idx++)
   {
-      csum_cal += r_config[20 + idx];
+      csum_cal += r_config[idx];
   }
   csum = r_config[23] & 0xFFFF;
   if(csum != csum_cal)
@@ -1368,6 +1367,21 @@ void EEPROM_Read_Config(void)
   time_high_limit.set_minute = (r_config[22])&0xFF;
 
   is_timelimit_active = (r_config[23]>>16)&0xFF;
+
+  #ifdef DEBUG
+	PPRINTF("Counter value: %d \n", COUNT3);
+	PPRINTF("Pump on time %d \n", pump_off_ms);
+	PPRINTF("Uplink period %d \n", APP_TX_DUTYCYCLE);
+	if(is_timelimit_active)
+	{
+		PPRINTF("Low limit: %d:%d \n",time_low_limit.set_hour, time_low_limit.set_minute);
+		PPRINTF("High limit: %d:%d \n",time_high_limit.set_hour, time_high_limit.set_minute);
+	}
+	else
+	{
+		PPRINTF("Time boundaries are not set \r\n");
+	}
+#endif /* End of DEBUG */
 }
 
 uint16_t string_touint(void)

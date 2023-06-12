@@ -375,22 +375,22 @@ uint16_t HW_Get12VBat( void )
   {
     vRefmV= (( (uint32_t) VDDA_VREFINT_CAL * (*VREFINT_CAL ) )/ vRefADC);
   }
-#if DEBUG  
+#ifdef DEBUG  
   PRINTF("Vref = %d (mV) \n\r", vRefmV);
 #endif
   
   vBatADC = HW_AdcReadChannel( ADC_12V_BAT_CHANNEL ); 
   
   vBatmV = (( (uint32_t) vBatADC * vRefmV )/ 4096);
-#if DEBUG
-  PRINTF("PA0 = %d (mV) \n\r", vBatmV);
+#ifdef DEBUG
+  PPRINTF("PA0 = %d (mV) \n\r", vBatmV);
 #endif
 
   // Calculate the 12V battery level with 330k/100k voltage divider
   vBatmV = (( (uint32_t) vBatmV * 430 )/ 100);
   
-#if DEBUG
-  PRINTF("V12V= %d (mV)\n\r", vBatmV);
+#ifdef DEBUG
+  PPRINTF("V12V= %d (mV)\n\r", vBatmV);
 #endif
 
   return (uint16_t) vBatmV;
