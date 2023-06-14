@@ -278,11 +278,10 @@ bool Is_Time_In_Boundaries(void)
 
 	if(cur_hour >= time_low_limit.set_hour && cur_hour <= time_high_limit.set_hour)
 	{
-		if((cur_hour == time_low_limit.set_hour && cur_min >= time_low_limit.set_minute) || 
-		(cur_hour == time_high_limit.set_hour && cur_min <= time_high_limit.set_minute) ||
-		(cur_hour > time_low_limit.set_hour && cur_hour < time_high_limit.set_hour))
+		if((cur_hour == time_low_limit.set_hour && cur_min >= time_low_limit.set_minute && cur_min <= time_high_limit.set_minute) || 
+			(cur_hour > time_low_limit.set_hour && cur_hour < time_high_limit.set_hour))
 		{
-		return true;
+			return true;
 		}
 	}
 	return false;
