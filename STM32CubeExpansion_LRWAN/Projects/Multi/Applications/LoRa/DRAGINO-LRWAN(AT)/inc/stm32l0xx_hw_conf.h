@@ -278,10 +278,15 @@ Maintainer: Miguel Luis and Gregory Cristian
 #define LED_BLUE_PORT              GPIOB
 #define LED_BLUE_PIN               GPIO_PIN_15
 
+#define LED_GREEN_PORT            GPIOA
+#define LED_GREEN_PIN             GPIO_PIN_8
+
 #define LED_RED_ON()              HAL_GPIO_WritePin(LED_RED_PORT,LED_RED_PIN,GPIO_PIN_RESET)
 #define LED_RED_OFF()             HAL_GPIO_WritePin(LED_RED_PORT,LED_RED_PIN,GPIO_PIN_SET)
 #define LED_BLUE_ON()             HAL_GPIO_WritePin(LED_BLUE_PORT,LED_BLUE_PIN,GPIO_PIN_RESET)
 #define LED_BLUE_OFF()            HAL_GPIO_WritePin(LED_BLUE_PORT,LED_BLUE_PIN,GPIO_PIN_SET)
+#define LED_GREEN_ON()            HAL_GPIO_WritePin(LED_GREEN_PORT,LED_GREEN_PIN,GPIO_PIN_RESET)
+#define LED_GREEN_OFF()           HAL_GPIO_WritePin(LED_GREEN_PORT,LED_GREEN_PIN,GPIO_PIN_SET)
 
 /* ---------------------------  Custom definition -------------------------------*/
 #define DS3231_INT_CLK_ENABLE()   __HAL_RCC_GPIOA_CLK_ENABLE()

@@ -77,6 +77,11 @@ Maintainer: Miguel Luis and Gregory Cristian
 #include "debug.h"
 #include "trace.h"
 #include "bsp.h"
+
+uint16_t HW_Get12VBat( void );
+
+uint8_t DS3231_IsAlarm1Triggered();
+void DS3231_ClearAlarm1Flag();
 	 
 	 typedef enum
 {

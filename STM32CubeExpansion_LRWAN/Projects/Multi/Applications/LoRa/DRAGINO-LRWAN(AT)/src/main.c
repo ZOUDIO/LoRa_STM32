@@ -113,7 +113,7 @@ static uint8_t normal_status = 0, normal2_status = 0, normal3_status = 0;
 bool is_check_exit = 0;
 bool rxpr_flags = 0;
 int exti_flag = 0, exti_flag2 = 0, exti_flag3 = 0;
-uint32_t COUNT = 0, COUNT2 = 0, COUNT3 = 0;
+volatile uint32_t COUNT = 0, COUNT2 = 0, COUNT3 = 0;
 uint32_t pump_off_ms = PUMP_OFF_TIME_DEFAULT; // Pump off time in ms
 uint8_t TDC_flag = 0;
 uint8_t join_flag = 0;
@@ -279,19 +279,19 @@ int main(void)
 		/* Handle UART commands */
 		CMD_Process();
 
-		// /* Check the reset button */
-		// if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5) == GPIO_PIN_RESET)
-		// {
-		// 	static uint32_t last_tick = 0;
-		// 	uint32_t cur_tick = HW_RTC_GetTimerValue();
-		// 	// Debouncing for 500ms
-		// 	if (cur_tick >= last_tick +  HW_RTC_ms2Tick(500))
-		// 	{
-		// 		PRINTF("Reset button pressed\r\n");
-		// 		COUNT3 = 0;
-		// 		last_tick = cur_tick;	
-		// 	}
-		// }
+		/* Check the reset button */
+		if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5) == GPIO_PIN_RESET)
+		{
+			static uint32_t last_tick = 0;
+			uint32_t cur_tick = HW_RTC_GetTimerValue();
+			// Debouncing for 500ms
+			if (cur_tick >= last_tick +  HW_RTC_ms2Tick(500))
+			{
+				PRINTF("Reset button pressed\r\n");
+				COUNT3 = 0;
+				last_tick = cur_tick;
+			}
+		}
 		
 		if (joined_led_flags == 1)
 		{
@@ -508,6 +508,17 @@ int main(void)
 		 * and cortex will not enter low power anyway
 		 * don't go in low power mode if we just received a char
 		 */
+		//LED_GREEN_OFF();
+		if(join_network)
+		{
+			LED_BLUE_ON();
+			LED_RED_OFF();
+		}
+		else
+		{
+			LED_RED_ON();
+			LED_BLUE_OFF();
+		}
 #ifndef LOW_POWER_DISABLE
 		LPM_EnterLowPower();
 #endif

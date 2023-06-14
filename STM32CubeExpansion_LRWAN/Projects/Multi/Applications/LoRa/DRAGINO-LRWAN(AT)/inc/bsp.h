@@ -137,7 +137,7 @@ typedef struct{
 /* External variables --------------------------------------------------------*/
 extern TimerEvent_t OffPumpTimer;
 extern bool is_timelimit_active;
-extern uint32_t COUNT3; // Presense count
+extern volatile uint32_t COUNT3; // Presense count
 extern uint32_t pump_off_ms;  
 extern time_boundaries_t time_low_limit;
 extern time_boundaries_t time_high_limit;
