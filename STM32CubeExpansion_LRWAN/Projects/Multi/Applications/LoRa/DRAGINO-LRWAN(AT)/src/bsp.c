@@ -278,8 +278,9 @@ bool Is_Time_In_Boundaries(void)
 
 	if(cur_hour >= time_low_limit.set_hour && cur_hour <= time_high_limit.set_hour)
 	{
-		if((cur_hour == time_low_limit.set_hour && cur_min >= time_low_limit.set_minute && cur_min <= time_high_limit.set_minute) || 
-			(cur_hour > time_low_limit.set_hour && cur_hour < time_high_limit.set_hour))
+		if((cur_hour == time_low_limit.set_hour && cur_min >= time_low_limit.set_minute) || 
+		(cur_hour == time_high_limit.set_hour && cur_min <= time_high_limit.set_minute) ||
+		(cur_hour > time_low_limit.set_hour && cur_hour < time_high_limit.set_hour))
 		{
 			return true;
 		}
@@ -353,8 +354,8 @@ void BSP_Button_Init()
 	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 	
 	// /* EXTI interrupt init*/
-	HAL_NVIC_SetPriority(EXTI4_15_IRQn, 2, 0);
-	HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
+//	HAL_NVIC_SetPriority(EXTI4_15_IRQn, 2, 0);
+//	HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
 }
 
 void BSP_LEDs_Init()
