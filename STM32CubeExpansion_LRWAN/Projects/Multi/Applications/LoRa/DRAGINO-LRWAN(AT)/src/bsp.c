@@ -275,16 +275,15 @@ bool Is_Time_In_Boundaries(void)
 	cur_hour = DS3231_GetHour();
 	cur_min = DS3231_GetMinute();
 	DS3231_PWR_PIN_OFF();			// Put DS3231 into low power mode
+	uint16_t low_limit_total_minute = time_low_limit.set_hour * 60 + time_low_limit.set_minute;
+	uint16_t high_limit_total_minute = time_high_limit.set_hour * 60 + time_high_limit.set_minute;
+	uint16_t cur_total_minute = cur_hour * 60 + cur_min;
 
-	if(cur_hour >= time_low_limit.set_hour && cur_hour <= time_high_limit.set_hour)
+	if(cur_total_minute >= low_limit_total_minute && cur_total_minute <= high_limit_total_minute)
 	{
-		if((cur_hour == time_low_limit.set_hour && cur_min >= time_low_limit.set_minute) || 
-		(cur_hour == time_high_limit.set_hour && cur_min <= time_high_limit.set_minute) ||
-		(cur_hour > time_low_limit.set_hour && cur_hour < time_high_limit.set_hour))
-		{
-			return true;
-		}
+		return true;
 	}
+	
 	return false;
 }
 
