@@ -175,7 +175,11 @@ static void HW_IoInit( void )
   Radio.IoInit( );
 	
   #if defined(LoRa_Sensor_Node)
+
+  #if USE_5V_OUTPUT
   pwr_control_IoInit();
+  #endif /* End of USE_5V_OUTPUT */
+
 	#endif
 }
 
@@ -191,7 +195,11 @@ static void HW_IoDeInit( void )
   Radio.IoDeInit( );
 	
 	#if defined(LoRa_Sensor_Node)
+
+  #if USE_5V_OUTPUT
   pwr_control_IoDeInit();
+  #endif /* End of USE_5V_OUTPUT */
+
 	#endif
 }
 

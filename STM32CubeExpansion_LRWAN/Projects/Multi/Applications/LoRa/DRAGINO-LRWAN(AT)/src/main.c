@@ -278,20 +278,6 @@ int main(void)
 	{
 		/* Handle UART commands */
 		CMD_Process();
-
-		/* Check the reset button */
-		if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5) == GPIO_PIN_RESET)
-		{
-			static uint32_t last_tick = 0;
-			uint32_t cur_tick = HW_RTC_GetTimerValue();
-			// Debouncing for 500ms
-			if (cur_tick >= last_tick +  HW_RTC_ms2Tick(500))
-			{
-				PRINTF("Reset button pressed\r\n");
-				COUNT3 = 0;
-				last_tick = cur_tick;
-			}
-		}
 		
 		if (joined_led_flags == 1)
 		{

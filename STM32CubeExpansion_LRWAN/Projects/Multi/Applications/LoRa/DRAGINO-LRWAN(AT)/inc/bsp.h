@@ -71,6 +71,8 @@ Maintainer: Miguel Luis and Gregory Cristian
 
 /* Includes ------------------------------------------------------------------*/
 /* Defines ------------------------------------------------------------------*/
+#define USE_5V_OUTPUT               0 //0 - Overwrite PB5 for other usage, 1 - Control 5V of LSN50
+
 #define DS3231_ALWAYS_POWERED	      1
 #define DS3231_USED_INTERRUPT 	    0
 #define DS3231_SYNC_INTERNAL_RTC    0

@@ -2167,7 +2167,7 @@ static uint8_t changeform(const char *from, uint8_t *pt, uint8_t number)
 
 void weightreset(void)
 {
-  HAL_GPIO_WritePin(PWR_OUT_PORT, PWR_OUT_PIN, GPIO_PIN_RESET); // Enable 5v power supply
+  PWR_OUT_ENABLE(); // Enable 5v power supply
   WEIGHT_SCK_Init();
   WEIGHT_DOUT_Init();
   Get_Maopi();
@@ -2175,5 +2175,5 @@ void weightreset(void)
   Get_Maopi();
   WEIGHT_SCK_DeInit();
   WEIGHT_DOUT_DeInit();
-  HAL_GPIO_WritePin(PWR_OUT_PORT, PWR_OUT_PIN, GPIO_PIN_SET); // Disable 5v power supply
+  PWR_OUT_DISABLE(); // Disable 5v power supply
 }

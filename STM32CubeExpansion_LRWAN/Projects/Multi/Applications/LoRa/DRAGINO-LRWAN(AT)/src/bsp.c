@@ -522,7 +522,7 @@ void BSP_sensor_Read( sensor_t *sensor_data, uint8_t message)
 	
 	if(power_time!=0)
 	{
-		HAL_GPIO_WritePin(PWR_OUT_PORT,PWR_OUT_PIN,GPIO_PIN_RESET);//Enable 5v power supply
+		PWR_OUT_ENABLE();//Enable 5v power supply
 		for(uint16_t i=0;i<(uint16_t)(power_time/100);i++)
 		{
 			 HAL_Delay(100);
@@ -651,7 +651,7 @@ void BSP_sensor_Read( sensor_t *sensor_data, uint8_t message)
 		PPRINTF("PA12_status:%d\r\n",sensor_data->in1);
 	}
 	
-	HAL_GPIO_WritePin(PWR_OUT_PORT,PWR_OUT_PIN,GPIO_PIN_SET);//Disable 5v power supply 
+	PWR_OUT_DISABLE();//Disable 5v power supply 
 	#endif
 	
 	if(message==1)
@@ -776,7 +776,9 @@ void BSP_sensor_Init(void)
 {
 #if defined(LoRa_Sensor_Node)
 
-//  pwr_control_IoInit();
+#if USE_5V_OUTPUT
+ pwr_control_IoInit();
+#endif /* End of USE_5V_OUTPUT */
 
   if ((mode == 1) || (mode == 3))
   {
@@ -845,7 +847,7 @@ void BSP_sensor_Init(void)
   else if (mode == 2)
   {
 		uint8_t dataByte[1] = {0x00};
-		HAL_GPIO_WritePin(PWR_OUT_PORT, PWR_OUT_PIN, GPIO_PIN_RESET); // Enable 5v power supply
+		PWR_OUT_ENABLE(); // Enable 5v power supply
 		BSP_lidar_Init();
 		waitbusy();
 		HAL_I2C_Mem_Write(&I2cHandle3, 0xc4, 0x00, 1, dataByte, 1, 1000);
@@ -881,11 +883,11 @@ void BSP_sensor_Init(void)
 				}
 			}
 		}
-		HAL_GPIO_WritePin(PWR_OUT_PORT, PWR_OUT_PIN, GPIO_PIN_SET); // Disable 5v power supply
+		PWR_OUT_DISABLE(); // Disable 5v power supply
   }
   else if (mode == 5)
   {
-		HAL_GPIO_WritePin(PWR_OUT_PORT, PWR_OUT_PIN, GPIO_PIN_RESET); // Enable 5v power supply
+		PWR_OUT_ENABLE(); // Enable 5v power supply
 		WEIGHT_SCK_Init();
 		WEIGHT_DOUT_Init();
 		Get_Maopi();
@@ -893,7 +895,7 @@ void BSP_sensor_Init(void)
 		Get_Maopi();
 		WEIGHT_SCK_DeInit();
 		WEIGHT_DOUT_DeInit();
-		HAL_GPIO_WritePin(PWR_OUT_PORT, PWR_OUT_PIN, GPIO_PIN_SET); // Disable 5v power supply
+		PWR_OUT_DISABLE(); // Disable 5v power supply
 		PPRINTF("\n\rUse Sensor is HX711\r\n");
   }
   else if ((mode == 7) || (mode == 9))
