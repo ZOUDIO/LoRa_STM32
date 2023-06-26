@@ -278,10 +278,15 @@ Maintainer: Miguel Luis and Gregory Cristian
 #define LED_BLUE_PORT              GPIOB
 #define LED_BLUE_PIN               GPIO_PIN_15
 
+#define LED_GREEN_PORT            GPIOA
+#define LED_GREEN_PIN             GPIO_PIN_8
+
 #define LED_RED_ON()              HAL_GPIO_WritePin(LED_RED_PORT,LED_RED_PIN,GPIO_PIN_RESET)
 #define LED_RED_OFF()             HAL_GPIO_WritePin(LED_RED_PORT,LED_RED_PIN,GPIO_PIN_SET)
 #define LED_BLUE_ON()             HAL_GPIO_WritePin(LED_BLUE_PORT,LED_BLUE_PIN,GPIO_PIN_RESET)
 #define LED_BLUE_OFF()            HAL_GPIO_WritePin(LED_BLUE_PORT,LED_BLUE_PIN,GPIO_PIN_SET)
+#define LED_GREEN_ON()            HAL_GPIO_WritePin(LED_GREEN_PORT,LED_GREEN_PIN,GPIO_PIN_RESET)
+#define LED_GREEN_OFF()           HAL_GPIO_WritePin(LED_GREEN_PORT,LED_GREEN_PIN,GPIO_PIN_SET)
 
 /* ---------------------------  Custom definition -------------------------------*/
 #define DS3231_INT_CLK_ENABLE()   __HAL_RCC_GPIOA_CLK_ENABLE()
@@ -296,6 +301,15 @@ Maintainer: Miguel Luis and Gregory Cristian
 /* ---------------------------  +5v PWR OUT definition -------------------------------*/
 #define PWR_OUT_PORT              GPIOB
 #define PWR_OUT_PIN               GPIO_PIN_5
+
+#if USE_5V_OUTPUT
+#define PWR_OUT_ENABLE()          HAL_GPIO_WritePin(PWR_OUT_PORT, PWR_OUT_PIN, GPIO_PIN_RESET)
+#define PWR_OUT_DISABLE()         HAL_GPIO_WritePin(PWR_OUT_PORT, PWR_OUT_PIN, GPIO_PIN_SET)
+#else 
+#define PWR_OUT_ENABLE()          (void)0
+#define PWR_OUT_DISABLE()         (void)0
+#endif /* End of USE_5V_OUTPUT */
+
 #ifdef __cplusplus
 }
 #endif

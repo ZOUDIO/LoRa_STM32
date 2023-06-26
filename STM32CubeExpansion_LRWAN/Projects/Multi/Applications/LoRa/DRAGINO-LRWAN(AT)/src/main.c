@@ -113,7 +113,7 @@ static uint8_t normal_status = 0, normal2_status = 0, normal3_status = 0;
 bool is_check_exit = 0;
 bool rxpr_flags = 0;
 int exti_flag = 0, exti_flag2 = 0, exti_flag3 = 0;
-uint32_t COUNT = 0, COUNT2 = 0, COUNT3 = 0;
+volatile uint32_t COUNT = 0, COUNT2 = 0, COUNT3 = 0;
 uint32_t pump_off_ms = PUMP_OFF_TIME_DEFAULT; // Pump off time in ms
 uint8_t TDC_flag = 0;
 uint8_t join_flag = 0;
@@ -278,7 +278,7 @@ int main(void)
 	{
 		/* Handle UART commands */
 		CMD_Process();
-
+		
 		if (joined_led_flags == 1)
 		{
 			joined_led_flags = 0;
@@ -494,6 +494,17 @@ int main(void)
 		 * and cortex will not enter low power anyway
 		 * don't go in low power mode if we just received a char
 		 */
+		//LED_GREEN_OFF();
+		if(join_network)
+		{
+			LED_BLUE_ON();
+			LED_RED_OFF();
+		}
+		else
+		{
+			LED_RED_ON();
+			LED_BLUE_OFF();
+		}
 #ifndef LOW_POWER_DISABLE
 		LPM_EnterLowPower();
 #endif
@@ -835,6 +846,13 @@ static void Send(void)
 		AppData.Buff[i++] = (uint8_t)(COUNT3);
 	}
 
+	AT_PRINTF("Uplink data:\r\n");
+	for (uint8_t idx = 0; idx < i; idx++)
+	{
+		AT_PRINTF("%02x ", AppData.Buff[idx]);
+	}
+	AT_PRINTF("\n\r===========================\r\n");
+
 	if (exit_temp == 1)
 	{
 		exti_flag = 0;
@@ -932,6 +950,11 @@ static void LORA_RxData(lora_AppData_t *AppData)
 	is_there_data = 1;
 
 	set_at_receive(AppData->Port, AppData->Buff, AppData->BuffSize);
+	for (int i = 0; i < AppData->BuffSize; i++)
+	{
+		AT_PRINTF("%02x ", AppData->Buff[i]);
+	}
+	AT_PRINTF("\n\r===========================\r\n");
 
 	switch (AppData->Buff[0] & 0xff)
 	{
@@ -1377,6 +1400,8 @@ static void LORA_RxData(lora_AppData_t *AppData)
 			// Update new pump-off timeout
 			pump_off_ms = AppData->Buff[1] << 24 | AppData->Buff[2] << 16 |
 							   AppData->Buff[3] << 8 | AppData->Buff[4];
+			EEPROM_Store_Config();
+			PRINTF("Set pump time to %d ms\n\r", pump_off_ms);
 		}
 		break;
 	}
@@ -1392,6 +1417,7 @@ static void LORA_RxData(lora_AppData_t *AppData)
 				 (AppData->Buff[4] == 0xFF) )
 			{
 				is_timelimit_active = false;
+				EEPROM_Store_Config();
 				PRINTF("Turn off time limit control\n\r");
 			}
 			else
@@ -1400,6 +1426,7 @@ static void LORA_RxData(lora_AppData_t *AppData)
 				 	 (Set_Time_High_Limit(AppData->Buff[3], AppData->Buff[4])) )
 				{
 					is_timelimit_active = true;
+					EEPROM_Store_Config();
 					PRINTF("Set time limit: %d:%d - %d:%d\n\r", AppData->Buff[1], AppData->Buff[2],
 											AppData->Buff[3], AppData->Buff[4]);
 				}
@@ -1575,6 +1602,7 @@ static void OnNetworkJoinedLedEvent(void)
 	TimerStop(&NetworkJoinedLedTimer);
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
 	LED_RED_OFF();
+	LED_BLUE_ON();
 	joined_led_end = 0;
 }
 

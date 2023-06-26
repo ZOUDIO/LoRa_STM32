@@ -1615,13 +1615,16 @@ ATEerror_t at_TIME_get(const char *param)
 ATEerror_t at_TIME_set(const char *param)
 {
   uint8_t sec, min, hour;
-  if (tiny_sscanf(param, "%d,%d,%d", &hour, &min, &sec) != 3)
+  if (tiny_sscanf(param, "%d,%d,%d", &hour, &min, &sec) == 3)
   {
-    return AT_PARAM_ERROR;
+    if (BSP_RTC_SetTime(hour, min, sec) == 1)
+    {
+        PPRINTF("Set time to %02d:%02d:%02d\r\n", hour, min, sec);
+        EEPROM_Store_Config();
+        return AT_OK;
+    }
   }
-  PPRINTF("Set time to %02d:%02d:%02d\r\n", hour, min, sec);
-  BSP_RTC_SetTime(hour, min, sec);
-  return AT_OK;
+  return AT_PARAM_ERROR;
 }
 
 ATEerror_t at_DATE_get(const char *param)
@@ -1637,13 +1640,16 @@ ATEerror_t at_DATE_set(const char *param)
 {
   uint16_t year;
   uint8_t day, date, month;
-  if(tiny_sscanf(param, "%d,%d,%d,%d", &day, &date, &month, &year) != 4)
+  if(tiny_sscanf(param, "%d,%d,%d,%d", &day, &date, &month, &year) == 4)
   {
-    return AT_PARAM_ERROR;
+    if (BSP_RTC_SetDate(day, date, month, year) == 1)
+    {
+      PPRINTF("Set date to %s, %d-%d-%d \r\n", ds3231_dayofweek[day-1], date, month, year);
+      EEPROM_Store_Config();
+      return AT_OK;
+    }
   }
-  PPRINTF("Set date to %s, %d-%d-%d \r\n", ds3231_dayofweek[day-1], date, month, year);
-  BSP_RTC_SetDate(day, date, month, year);
-  return AT_OK;
+  return AT_PARAM_ERROR;
 }
 
 ATEerror_t at_INTMOD1_set(const char *param)
@@ -2161,7 +2167,7 @@ static uint8_t changeform(const char *from, uint8_t *pt, uint8_t number)
 
 void weightreset(void)
 {
-  HAL_GPIO_WritePin(PWR_OUT_PORT, PWR_OUT_PIN, GPIO_PIN_RESET); // Enable 5v power supply
+  PWR_OUT_ENABLE(); // Enable 5v power supply
   WEIGHT_SCK_Init();
   WEIGHT_DOUT_Init();
   Get_Maopi();
@@ -2169,5 +2175,5 @@ void weightreset(void)
   Get_Maopi();
   WEIGHT_SCK_DeInit();
   WEIGHT_DOUT_DeInit();
-  HAL_GPIO_WritePin(PWR_OUT_PORT, PWR_OUT_PIN, GPIO_PIN_SET); // Disable 5v power supply
+  PWR_OUT_DISABLE(); // Disable 5v power supply
 }

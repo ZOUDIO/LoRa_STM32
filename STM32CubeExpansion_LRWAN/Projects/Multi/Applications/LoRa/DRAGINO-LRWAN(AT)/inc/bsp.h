@@ -71,8 +71,11 @@ Maintainer: Miguel Luis and Gregory Cristian
 
 /* Includes ------------------------------------------------------------------*/
 /* Defines ------------------------------------------------------------------*/
-#define DS3231_ALWAYS_POWERED	  1
-#define DS3231_USED_INTERRUPT 	0
+#define USE_5V_OUTPUT               0 //0 - Overwrite PB5 for other usage, 1 - Control 5V of LSN50
+
+#define DS3231_ALWAYS_POWERED	      1
+#define DS3231_USED_INTERRUPT 	    0
+#define DS3231_SYNC_INTERNAL_RTC    0
 
 #if DS3231_ALWAYS_POWERED
 #define DS3231_PWR_PIN_ON()       (void)0
@@ -136,6 +139,11 @@ typedef struct{
 /* External variables --------------------------------------------------------*/
 extern TimerEvent_t OffPumpTimer;
 extern bool is_timelimit_active;
+extern volatile uint32_t COUNT3; // Presense count
+extern uint32_t pump_off_ms;  
+extern time_boundaries_t time_low_limit;
+extern time_boundaries_t time_high_limit;
+extern bool is_timelimit_active;
 /* Exported macros -----------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */ 
 /**
@@ -158,9 +166,9 @@ void Device_status( device_t *device_data);
 void Pump_ON(void);
 void Pump_OFF(void);
 
-void BSP_RTC_SetTime(uint8_t hour, uint8_t min, uint8_t sec);
+bool BSP_RTC_SetTime(uint8_t hour, uint8_t min, uint8_t sec);
 void BSP_RTC_GetTime(uint8_t* p_hour, uint8_t* p_min, uint8_t* p_sec);
-void BSP_RTC_SetDate(uint8_t dayofweek, uint8_t date, uint8_t month, uint16_t year);
+bool BSP_RTC_SetDate(uint8_t dayofweek, uint8_t date, uint8_t month, uint16_t year);
 void BSP_RTC_GetDate(uint8_t* p_dayofweek, uint8_t* p_date, uint8_t* p_month, uint16_t* p_year);
 void BSP_RTC_SyncTime(void);
 bool Is_Time_In_Boundaries(void);

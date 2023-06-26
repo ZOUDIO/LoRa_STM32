@@ -262,7 +262,7 @@ void SX1276SetAntSwLowPower( bool status )
             SX1276AntSwDeInit( );
 					  if(joined_led_end==1)
 	          {
-							HW_GPIO_Write( RADIO_ANT_SWITCH_PORT, RADIO_ANT_SWITCH_PIN, 1);
+							HW_GPIO_Write( RADIO_ANT_SWITCH_PORT, RADIO_ANT_SWITCH_PIN, 0); //was 1
 							joined_led_end=0;
 	          }
         }
@@ -291,7 +291,7 @@ static void SX1276AntSwDeInit( void )
   initStruct.Speed = GPIO_SPEED_HIGH;
 
   HW_GPIO_Init(  RADIO_ANT_SWITCH_PORT, RADIO_ANT_SWITCH_PIN, &initStruct ); 
-  HW_GPIO_Write( RADIO_ANT_SWITCH_PORT, RADIO_ANT_SWITCH_PIN, 0);
+  HW_GPIO_Write( RADIO_ANT_SWITCH_PORT, RADIO_ANT_SWITCH_PIN, 1); //was 0
 }
 
 void SX1276SetAntSw( uint8_t opMode )

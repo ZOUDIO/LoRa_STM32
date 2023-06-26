@@ -106,8 +106,8 @@ extern uint8_t inmode,inmode2,inmode3;
 extern uint16_t power_time;
 extern uint32_t COUNT,COUNT2;
 
-time_boundaries_t time_low_limit = {0, 0};
-time_boundaries_t time_high_limit = {0, 0};
+time_boundaries_t time_low_limit = {0xFF, 0xFF};
+time_boundaries_t time_high_limit = {0xFF, 0xFF};
 bool is_timelimit_active = false;
 
 
@@ -180,18 +180,19 @@ void BSP_RTC_Init(void)
 
 }
 
-void BSP_RTC_SetTime(uint8_t hour, uint8_t min, uint8_t sec)
+bool BSP_RTC_SetTime(uint8_t hour, uint8_t min, uint8_t sec)
 {
 	if(hour > 23 || min > 59 || sec > 59)
 	{
 		PPRINTF("Invalid time input!\r\n");
-		return;
+		return 0;
 	}
 	DS3231_PWR_PIN_ON();			// Power on RTC
 
 	DS3231_SetFullTime(hour, min, sec);
 	BSP_RTC_SyncTime();
-	DS3231_PWR_PIN_OFF();			// Put DS3231 into low power mode
+	DS3231_PWR_PIN_OFF();		
+	return 1;	// Put DS3231 into low power mode
 }
 
 void BSP_RTC_GetTime(uint8_t* p_hour, uint8_t* p_min, uint8_t* p_sec)
@@ -206,17 +207,18 @@ void BSP_RTC_GetTime(uint8_t* p_hour, uint8_t* p_min, uint8_t* p_sec)
 	
 }
 
-void BSP_RTC_SetDate(uint8_t dayofweek, uint8_t date, uint8_t month, uint16_t year)
+bool BSP_RTC_SetDate(uint8_t dayofweek, uint8_t date, uint8_t month, uint16_t year)
 {
 	if(dayofweek > 7 || date > 31 || month > 12 || year > 2099)
 	{
 		PRINTF("Invalid date/time input \r\n");
-		return;
+		return 0;
 	}
 	DS3231_PWR_PIN_ON();			// Power on RTC
 
 	DS3231_SetFullDate(date, month, dayofweek, year);
 	DS3231_PWR_PIN_OFF();			// Put DS3231 into low power mode
+	return 1;
 }
 
 void BSP_RTC_GetDate(uint8_t* p_dayofweek, uint8_t* p_date, uint8_t* p_month, uint16_t* p_year)
@@ -234,6 +236,8 @@ void BSP_RTC_GetDate(uint8_t* p_dayofweek, uint8_t* p_date, uint8_t* p_month, ui
 //Sync time with the internal RTC of the STM32
 void BSP_RTC_SyncTime(void)
 {
+	#if DS3231_SYNC_INTERNAL_RTC
+	
 	// Set the RTC current date/time
 	RTC_HandleTypeDef* internal_rtc_handle = GetRTCHandle();
 	RTC_TimeTypeDef internal_rtc_time = {
@@ -249,6 +253,7 @@ void BSP_RTC_SyncTime(void)
 															internal_rtc_time.Seconds);
 	RTC_DateTypeDef dummy_date = {0};
 	HAL_RTC_GetDate(internal_rtc_handle, &dummy_date, RTC_FORMAT_BIN);
+	#endif /* End of DS3231_SYNC_INTERNAL_RTC */
 }
 
 // Get time from the internal RTC of the STM32
@@ -270,12 +275,15 @@ bool Is_Time_In_Boundaries(void)
 	cur_hour = DS3231_GetHour();
 	cur_min = DS3231_GetMinute();
 	DS3231_PWR_PIN_OFF();			// Put DS3231 into low power mode
+	uint16_t low_limit_total_minute = time_low_limit.set_hour * 60 + time_low_limit.set_minute;
+	uint16_t high_limit_total_minute = time_high_limit.set_hour * 60 + time_high_limit.set_minute;
+	uint16_t cur_total_minute = cur_hour * 60 + cur_min;
 
-	if(cur_hour >= time_low_limit.set_hour && cur_hour <= time_high_limit.set_hour)
+	if(cur_total_minute >= low_limit_total_minute && cur_total_minute <= high_limit_total_minute)
 	{
-		if(cur_min >= time_low_limit.set_minute && cur_min <= time_high_limit.set_minute)
 		return true;
 	}
+	
 	return false;
 }
 
@@ -301,11 +309,13 @@ bool Set_Time_High_Limit(uint8_t hour, uint8_t min)
 void Pump_ON(void)
 {
 	HAL_GPIO_WritePin(PUMP_PORT, PUMP_PIN, GPIO_PIN_SET);
+	PRINTF("Pump ON\r\n");
 }
 
 void Pump_OFF(void)
 {
 	HAL_GPIO_WritePin(PUMP_PORT, PUMP_PIN, GPIO_PIN_RESET);
+	PRINTF("Pump OFF\r\n");
 }
 
 void BSP_Sensor_Init()
@@ -338,13 +348,13 @@ void BSP_Button_Init()
 	__HAL_RCC_GPIOB_CLK_ENABLE();
 
 	GPIO_InitStruct.Pin = GPIO_PIN_5;	
-	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 	
-	/* EXTI interrupt init*/
-	HAL_NVIC_SetPriority(EXTI4_15_IRQn, 2, 0);
-	HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
+	// /* EXTI interrupt init*/
+//	HAL_NVIC_SetPriority(EXTI4_15_IRQn, 2, 0);
+//	HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
 }
 
 void BSP_LEDs_Init()
@@ -512,7 +522,7 @@ void BSP_sensor_Read( sensor_t *sensor_data, uint8_t message)
 	
 	if(power_time!=0)
 	{
-		HAL_GPIO_WritePin(PWR_OUT_PORT,PWR_OUT_PIN,GPIO_PIN_RESET);//Enable 5v power supply
+		PWR_OUT_ENABLE();//Enable 5v power supply
 		for(uint16_t i=0;i<(uint16_t)(power_time/100);i++)
 		{
 			 HAL_Delay(100);
@@ -641,7 +651,7 @@ void BSP_sensor_Read( sensor_t *sensor_data, uint8_t message)
 		PPRINTF("PA12_status:%d\r\n",sensor_data->in1);
 	}
 	
-	HAL_GPIO_WritePin(PWR_OUT_PORT,PWR_OUT_PIN,GPIO_PIN_SET);//Disable 5v power supply 
+	PWR_OUT_DISABLE();//Disable 5v power supply 
 	#endif
 	
 	if(message==1)
@@ -766,7 +776,9 @@ void BSP_sensor_Init(void)
 {
 #if defined(LoRa_Sensor_Node)
 
-//  pwr_control_IoInit();
+#if USE_5V_OUTPUT
+ pwr_control_IoInit();
+#endif /* End of USE_5V_OUTPUT */
 
   if ((mode == 1) || (mode == 3))
   {
@@ -835,7 +847,7 @@ void BSP_sensor_Init(void)
   else if (mode == 2)
   {
 		uint8_t dataByte[1] = {0x00};
-		HAL_GPIO_WritePin(PWR_OUT_PORT, PWR_OUT_PIN, GPIO_PIN_RESET); // Enable 5v power supply
+		PWR_OUT_ENABLE(); // Enable 5v power supply
 		BSP_lidar_Init();
 		waitbusy();
 		HAL_I2C_Mem_Write(&I2cHandle3, 0xc4, 0x00, 1, dataByte, 1, 1000);
@@ -871,11 +883,11 @@ void BSP_sensor_Init(void)
 				}
 			}
 		}
-		HAL_GPIO_WritePin(PWR_OUT_PORT, PWR_OUT_PIN, GPIO_PIN_SET); // Disable 5v power supply
+		PWR_OUT_DISABLE(); // Disable 5v power supply
   }
   else if (mode == 5)
   {
-		HAL_GPIO_WritePin(PWR_OUT_PORT, PWR_OUT_PIN, GPIO_PIN_RESET); // Enable 5v power supply
+		PWR_OUT_ENABLE(); // Enable 5v power supply
 		WEIGHT_SCK_Init();
 		WEIGHT_DOUT_Init();
 		Get_Maopi();
@@ -883,7 +895,7 @@ void BSP_sensor_Init(void)
 		Get_Maopi();
 		WEIGHT_SCK_DeInit();
 		WEIGHT_DOUT_DeInit();
-		HAL_GPIO_WritePin(PWR_OUT_PORT, PWR_OUT_PIN, GPIO_PIN_SET); // Disable 5v power supply
+		PWR_OUT_DISABLE(); // Disable 5v power supply
 		PPRINTF("\n\rUse Sensor is HX711\r\n");
   }
   else if ((mode == 7) || (mode == 9))

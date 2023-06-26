@@ -23,21 +23,16 @@ In file Projects/Multi/Applications/LoRa/DRAGINO-LRWAN(AT)/inc/hw_conf.h
 ## Uplink package format
 | Size (bytes) |    2               |        4          |
 |--------------|--------------------|--------------------
-| value        |  12 VBattery (mV)  | Counter           |
+| value        |  12 VBattery (mV)  | Counter value     |
 
 
-## Adjusting pump-timeout (will reset to default value ~2s if the MCU is reset)
+## Adjusting pump-timeout
 
 | Size (bytes) |    1           |        4          |
 |--------------|----------------|--------------------
 | value        |  0x34          | New pump off timer|
 
-Ex: To set pump time off to 5000ms (5s) -> 0x34 0x00 0x00 0x13 0x18 
-
-## AT commands to time for DS3231
-Set time → AT+TIME=HH,MM,SS
-Set date→  AT+DATE=D,DD,MM,YY (D = Day = Sunday -Saturday ~ 1-7)
-
+Ex: To set pump time off to 5000ms (5s) -> 0x34 0x00 0x00 0x13 0x18 (Hexadecimal - MSB)
 
 ## Setting the time boudaries for pump
 0x35 HH_low MM_low HH_high MM_high
@@ -45,9 +40,24 @@ Set date→  AT+DATE=D,DD,MM,YY (D = Day = Sunday -Saturday ~ 1-7)
 |--------------|----------------|--------------------|----------------|-------------------|-------------------
 | value        |  0x35          | Hour low limit     | Min low limit  | Hour high limit   | Min high limit    |
 
-Note: Send 0x35 FF FF FF FF to turn off the time boundaries
-Ex: Set the time boundaries so that the pump can only be turned on at 10:10-11:15
--> Downlink: 0x35 10 10 11 15
+Ex: Set the time boundaries so that the pump can only be turned on at 11:25 - 20:45
+-> Downlink: 0x35 0x0A 0x19 0x14 0x2D
+
+Note: Send 0x35 0xFF 0xFF 0xFF 0xFF to turn off the time boundaries
+
+
+## AT commands to time for DS3231 (Input is in decimal)
+Set time → AT+TIME=HH,MM,SS
+Set date→  AT+DATE=D,DD,MM,YY (D = Day = Sunday -Saturday ~ 1-7)
+
+Ex: Set time to 11:25:00 Saturday 20/11/2020
+
+-> AT+TIME=11,25,00
+
+-> AT+DATE=7,20,11,20
+
+
+
 
 ## Version 1.8.2
 ## Pin used
