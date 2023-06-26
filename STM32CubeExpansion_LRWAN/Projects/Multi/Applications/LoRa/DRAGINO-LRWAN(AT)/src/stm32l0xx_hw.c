@@ -393,9 +393,10 @@ uint16_t HW_Get12VBat( void )
 #ifdef DEBUG
   PPRINTF("PA0 = %d (mV) \n\r", vBatmV);
 #endif
+	
 
   // Calculate the 12V battery level with 330k/100k voltage divider
-  vBatmV = (( (uint32_t) vBatmV * 430 )/ 100);
+  vBatmV = (( (uint32_t) vBatmV * (330+100) )/ 100);
   
 #ifdef DEBUG
   PPRINTF("V12V= %d (mV)\n\r", vBatmV);

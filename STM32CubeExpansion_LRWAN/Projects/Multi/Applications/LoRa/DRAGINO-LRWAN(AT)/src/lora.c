@@ -1381,6 +1381,8 @@ void EEPROM_Read_Config(void)
 	{
 		PPRINTF("Time boundaries are not set \r\n");
 	}
+	
+	HW_Get12VBat();
 #endif /* End of DEBUG */
 }
 
