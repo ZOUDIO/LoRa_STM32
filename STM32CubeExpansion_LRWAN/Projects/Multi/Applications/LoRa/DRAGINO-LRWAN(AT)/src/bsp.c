@@ -287,22 +287,38 @@ bool Is_Time_In_Boundaries(void)
 	return false;
 }
 
-bool Set_Time_Low_Limit(uint8_t hour, uint8_t min)
+bool Set_Time_Boundaries(uint8_t low_hour, uint8_t low_min, uint8_t high_hour, uint8_t high_min)
 {
-	if(hour > 23 || min > 59)
+	if ( (low_hour == 0xFF) && (low_min == 0xFF) && (high_hour == 0xFF) && (high_min == 0xFF) )
+	{
+		time_low_limit.set_hour = 0xFF;
+		time_low_limit.set_minute = 0xFF;
+		time_high_limit.set_hour = 0xFF;
+		time_high_limit.set_minute = 0xFF;
+		is_timelimit_active = false;
+		PRINTF("Time limit is disabled \r\n");
+		return true;
+	}
+	else if(low_hour > 23 || low_min > 59 || high_hour > 23 || high_min > 59)
 		return false;
-	time_low_limit.set_hour = hour;
-	time_low_limit.set_minute = min;
-	return true;
+	else
+	{
+		time_low_limit.set_hour = low_hour;
+		time_low_limit.set_minute = low_min;
+		time_high_limit.set_hour = high_hour;
+		time_high_limit.set_minute = high_min;
+		is_timelimit_active = true;
+		return true;
+	}
+		
 }
 
-bool Set_Time_High_Limit(uint8_t hour, uint8_t min)
+void Get_Time_Boundaries(uint8_t* p_low_hour, uint8_t* p_low_min, uint8_t* p_high_hour, uint8_t* p_high_min)
 {
-	if(hour > 23 || min > 59)
-		return false;
-	time_high_limit.set_hour = hour;
-	time_high_limit.set_minute = min;
-	return true;
+	*p_low_hour = time_low_limit.set_hour;
+	*p_low_min = time_low_limit.set_minute;
+	*p_high_hour = time_high_limit.set_hour;
+	*p_high_min = time_high_limit.set_minute;
 }
 
 

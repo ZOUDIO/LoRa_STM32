@@ -172,9 +172,8 @@ bool BSP_RTC_SetDate(uint8_t dayofweek, uint8_t date, uint8_t month, uint16_t ye
 void BSP_RTC_GetDate(uint8_t* p_dayofweek, uint8_t* p_date, uint8_t* p_month, uint16_t* p_year);
 void BSP_RTC_SyncTime(void);
 bool Is_Time_In_Boundaries(void);
-bool Set_Time_Low_Limit(uint8_t hour, uint8_t min);
-bool Set_Time_High_Limit(uint8_t hour, uint8_t min);
-
+bool Set_Time_Boundaries(uint8_t low_hour, uint8_t low_min, uint8_t high_hour, uint8_t high_min);
+void Get_Time_Boundaries(uint8_t* p_low_hour, uint8_t* p_low_min, uint8_t* p_high_hour, uint8_t* p_high_min);
 #ifdef __cplusplus
 }
 #endif
