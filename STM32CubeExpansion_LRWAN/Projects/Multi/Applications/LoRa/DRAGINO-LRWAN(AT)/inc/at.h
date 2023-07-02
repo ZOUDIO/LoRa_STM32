@@ -144,6 +144,8 @@ typedef enum eATEerror
 #define AT_RXDATEST  			  "+RXDATEST"
 #define AT_RTCTIME     "+TIME"
 #define AT_RTCDATE      "+DATE"
+#define AT_PUMPTIME     "+PUMPTIME" 
+#define AT_LIMITTIME    "+LIMITTIME"
 
 /* Exported functions ------------------------------------------------------- */
 void weightreset(void);
@@ -738,6 +740,15 @@ ATEerror_t at_TIME_set(const char *param);
 ATEerror_t at_DATE_get(const char *param);
 
 ATEerror_t at_DATE_set(const char *param);
+
+ATEerror_t at_PUMPTIME_get(const char *param);
+
+ATEerror_t at_PUMPTIME_set(const char *param);
+
+ATEerror_t at_TIMELIMIT_get(const char *param);
+
+ATEerror_t at_TIMELIMIT_set(const char *param);
+
 #ifdef __cplusplus
 }
 #endif

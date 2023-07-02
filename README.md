@@ -69,6 +69,9 @@ Ex: Set time to 11:25:00 Saturday 20/11/2020
 - LED BLUE pin: PB15 - Output active low
 - LED GREEN pin: PA8 - Output (RADIO ANT SWTICH)
 
+## Version 1.8.3
+- Add AT commands for setting pump time and time boundaries 
+
 
 ## Improvements
 > Current implementation will prevent changing to other working mode and force to run in mode 10 after reset

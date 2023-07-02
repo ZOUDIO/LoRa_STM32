@@ -808,6 +808,28 @@ static const struct ATCommand_s ATCommand[] =
             .set = at_DATE_set,
             .run = at_return_error,
         },
+        {
+            .string = AT_PUMPTIME,
+            .size_string = sizeof(AT_PUMPTIME) - 1,
+#ifndef NO_HELP
+            .help_string = "AT" AT_PUMPTIME ": Get/Set Pump time (in ms)\r\n",
+#endif
+            .get = at_PUMPTIME_get,
+            .set = at_PUMPTIME_set,
+            .run = at_return_error,
+        },
+        {
+            .string = AT_LIMITTIME,
+            .size_string = sizeof(AT_LIMITTIME) - 1,
+#ifndef NO_HELP
+            .help_string = "AT" AT_LIMITTIME ": Get/Set time limit/boundaries\r\n",
+#endif
+            .get = at_TIMELIMIT_get,
+            .set = at_TIMELIMIT_set,
+            .run = at_return_error,
+        },
+        
+
         
 };
 
