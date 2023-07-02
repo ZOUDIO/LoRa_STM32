@@ -1061,6 +1061,10 @@ void Flash_Read_key(void)
 	read_data(16,lora_config.AppSKey,r_key[11],r_key[12],r_key[13],r_key[14]);
 	read_data(8 ,lora_config.AppEui,r_key[15],r_key[16],0,0);
 }
+#define TESTING_ERASE_EEPROM 1
+#if (TESTING_ERASE_EEPROM == 1)
+volatile uint8_t g_test_erase = 0;
+#endif /* End of TESTING_ERASE_EEPROM */
 
 void EEPROM_Store_Config(void)
 {
@@ -1194,6 +1198,16 @@ void EEPROM_Store_Config(void)
     csum += (uint32_t)s_config[i];
   }
   s_config[config_count++]=( ((is_timelimit_active & 0xFF) << 16) | (csum & 0xFFFF) );
+  PPRINTF("Largest config count: %d\n\r", config_count); //23?
+#if (TESTING_ERASE_EEPROM == 1)
+if(g_test_erase) {
+  s_config[20] = 0;
+  s_config[21] = 0;
+  s_config[22] = 0;
+  s_config[23] = 0;
+  g_test_erase = 0;
+  }
+#endif /* End of TESTING_ERASE_EEPROM */
 
 	EEPROM_program(EEPROM_USER_START_ADDR_CONFIG,s_config,config_count);//store config
 	
@@ -1355,19 +1369,21 @@ void EEPROM_Read_Config(void)
   if(csum != csum_cal)
   {
     PRINTF("csum error, cal: %d, read: %d\r\n", csum_cal, csum);
-    return;
+    PRINTF("Use default config\r\n")  
   }
+  else
+  {
+    // COUNT3 = r_config[20];
+    pump_off_ms = r_config[21];
 
-  // COUNT3 = r_config[20];
-  pump_off_ms = r_config[21];
+    time_low_limit.set_hour = (r_config[22]>>24)&0xFF;
+    time_low_limit.set_minute = (r_config[22]>>16)&0xFF;
+    time_high_limit.set_hour = (r_config[22]>>8)&0xFF;
+    time_high_limit.set_minute = (r_config[22])&0xFF;
 
-  time_low_limit.set_hour = (r_config[22]>>24)&0xFF;
-  time_low_limit.set_minute = (r_config[22]>>16)&0xFF;
-  time_high_limit.set_hour = (r_config[22]>>8)&0xFF;
-  time_high_limit.set_minute = (r_config[22])&0xFF;
-
-  is_timelimit_active = (r_config[23]>>16)&0xFF;
-
+    is_timelimit_active = (r_config[23]>>16)&0xFF;
+  }
+  
   #ifdef DEBUG
 	PPRINTF("Counter value: %d \n", COUNT3);
 	PPRINTF("Pump on time %d \n", pump_off_ms);
