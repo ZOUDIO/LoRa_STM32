@@ -1620,7 +1620,6 @@ ATEerror_t at_TIME_set(const char *param)
     if (BSP_RTC_SetTime(hour, min, sec) == 1)
     {
         PPRINTF("Set time to %02d:%02d:%02d\r\n", hour, min, sec);
-        EEPROM_Store_Config();
         return AT_OK;
     }
   }
@@ -1645,7 +1644,6 @@ ATEerror_t at_DATE_set(const char *param)
     if (BSP_RTC_SetDate(day, date, month, year) == 1)
     {
       PPRINTF("Set date to %s, %d-%d-%d \r\n", ds3231_dayofweek[day-1], date, month, year);
-      EEPROM_Store_Config();
       return AT_OK;
     }
   }
@@ -1664,7 +1662,6 @@ ATEerror_t at_PUMPTIME_set(const char *param)
   if(tiny_sscanf(param, "%ld", &temp_pump_off_ms) == 1)
   {
     pump_off_ms = temp_pump_off_ms;
-    EEPROM_Store_Config();
     AT_PRINTF("Pump time %d (ms)\r\n", pump_off_ms);
     return AT_OK;
   }
@@ -1686,7 +1683,6 @@ ATEerror_t at_TIMELIMIT_set(const char *param)
   {
     if( Set_Time_Boundaries(low_hour, low_min, high_hour, high_min))
     {
-      EEPROM_Store_Config();
       AT_PRINTF("Time limit: %02d:%02d:%02d:%02d\r\n", low_hour, low_min, high_hour, high_min);
       return AT_OK;
     }

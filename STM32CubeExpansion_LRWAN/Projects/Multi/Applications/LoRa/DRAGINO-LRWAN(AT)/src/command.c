@@ -819,10 +819,10 @@ static const struct ATCommand_s ATCommand[] =
             .run = at_return_error,
         },
         {
-            .string = AT_TIMELIMIT,
-            .size_string = sizeof(AT_TIMELIMIT) - 1,
+            .string = AT_LIMITTIME,
+            .size_string = sizeof(AT_LIMITTIME) - 1,
 #ifndef NO_HELP
-            .help_string = "AT" AT_TIMELIMIT ": Get/Set time limit/boundaries\r\n",
+            .help_string = "AT" AT_LIMITTIME ": Get/Set time limit/boundaries\r\n",
 #endif
             .get = at_TIMELIMIT_get,
             .set = at_TIMELIMIT_set,

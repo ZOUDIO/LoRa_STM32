@@ -145,7 +145,7 @@ typedef enum eATEerror
 #define AT_RTCTIME     "+TIME"
 #define AT_RTCDATE      "+DATE"
 #define AT_PUMPTIME     "+PUMPTIME" 
-#define AT_TIMELIMIT    "+TIMELIMIT"
+#define AT_LIMITTIME    "+LIMITTIME"
 
 /* Exported functions ------------------------------------------------------- */
 void weightreset(void);
