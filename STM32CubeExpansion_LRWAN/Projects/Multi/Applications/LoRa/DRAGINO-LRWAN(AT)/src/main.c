@@ -120,6 +120,7 @@ uint8_t join_flag = 0;
 uint8_t atz_flags = 0;
 uint16_t batteryLevel_mV;
 uint8_t payloadlens;
+static volatile bool uplink_config_flag = 0; // Change uplink payload to cofig params instead of normal payload
 bool is_time_to_IWDG_Refresh = 0;
 bool join_network = 0;
 bool joined_flags = 0;
@@ -837,13 +838,35 @@ static void Send(void)
 
 	else if (mode == 10)
 	{
-		uint16_t vbat_12v = HW_Get12VBat();
-		AppData.Buff[i++] = (vbat_12v >> 8); // level of battery in mV
-		AppData.Buff[i++] = vbat_12v & 0xFF;
-		AppData.Buff[i++] = (uint8_t)((COUNT3) >> 24);
-		AppData.Buff[i++] = (uint8_t)((COUNT3) >> 16);
-		AppData.Buff[i++] = (uint8_t)((COUNT3) >> 8);
-		AppData.Buff[i++] = (uint8_t)(COUNT3);
+		if(uplink_config_flag)
+		{
+			/* Only send 1 time and then switch back to normal payload */
+			uint8_t low_hour, low_min, high_hour, high_min;
+  			Get_Time_Boundaries(&low_hour, &low_min, &high_hour, &high_min);
+			AppData.Buff[i++] = 0x40;
+			AppData.Buff[i++] = 0x40;
+
+			AppData.Buff[i++] = pump_off_ms >> 24;
+			AppData.Buff[i++] = pump_off_ms >> 16;
+			AppData.Buff[i++] = pump_off_ms >> 8;
+			AppData.Buff[i++] = pump_off_ms & 0xFF;
+
+			AppData.Buff[i++] = low_hour;
+			AppData.Buff[i++] = low_min;
+			AppData.Buff[i++] = high_hour;
+			AppData.Buff[i++] = high_min;
+			uplink_config_flag = 0;
+		}
+		else
+		{
+			uint16_t vbat_12v = HW_Get12VBat();
+			AppData.Buff[i++] = (vbat_12v >> 8); // level of battery in mV
+			AppData.Buff[i++] = vbat_12v & 0xFF;
+			AppData.Buff[i++] = (uint8_t)((COUNT3) >> 24);
+			AppData.Buff[i++] = (uint8_t)((COUNT3) >> 16);
+			AppData.Buff[i++] = (uint8_t)((COUNT3) >> 8);
+			AppData.Buff[i++] = (uint8_t)(COUNT3);
+		}
 	}
 
 	AT_PRINTF("Uplink data:\r\n");
@@ -1421,6 +1444,23 @@ static void LORA_RxData(lora_AppData_t *AppData)
 		{
 			PRINTF("Set time boundaries: Invalid input\n\r");
 		}
+		break;
+	}
+
+	// Change uplink to send device config params
+	case 0x40:
+	{
+		if( ( AppData->BuffSize == 2 ) && (AppData->Buff[1] == 0x40) ) //----> Read device config params
+		{
+			uplink_config_flag = 1;
+			PRINTF("Next uplink will send device config params\n\r");
+
+		}
+		else
+		{
+			PRINTF("Read device config params: Invalid input\n\r");
+		}
+
 		break;
 	}
 
