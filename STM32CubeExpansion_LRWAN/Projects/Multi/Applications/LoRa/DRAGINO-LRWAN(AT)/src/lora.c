@@ -1356,7 +1356,7 @@ void EEPROM_Read_Config(void)
   if(csum != csum_cal)
   {
     PRINTF("csum error, cal: %d, read: %d\r\n", csum_cal, csum);
-    PRINTF("Use default config\r\n")  
+    PRINTF("Use default config\r\n"); 
   }
   else
   {
