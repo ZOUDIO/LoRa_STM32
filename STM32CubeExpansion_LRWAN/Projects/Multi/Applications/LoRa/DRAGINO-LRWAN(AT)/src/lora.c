@@ -1351,23 +1351,26 @@ void EEPROM_Read_Config(void)
   {
       csum_cal += r_config[idx];
   }
+  csum_cal &= 0xFFFF;
   csum = r_config[23] & 0xFFFF;
   if(csum != csum_cal)
   {
     PRINTF("csum error, cal: %d, read: %d\r\n", csum_cal, csum);
-    return;
+    PRINTF("Use default config\r\n")  
   }
+  else
+  {
+    // COUNT3 = r_config[20];
+    pump_off_ms = r_config[21];
 
-  // COUNT3 = r_config[20];
-  pump_off_ms = r_config[21];
+    time_low_limit.set_hour = (r_config[22]>>24)&0xFF;
+    time_low_limit.set_minute = (r_config[22]>>16)&0xFF;
+    time_high_limit.set_hour = (r_config[22]>>8)&0xFF;
+    time_high_limit.set_minute = (r_config[22])&0xFF;
 
-  time_low_limit.set_hour = (r_config[22]>>24)&0xFF;
-  time_low_limit.set_minute = (r_config[22]>>16)&0xFF;
-  time_high_limit.set_hour = (r_config[22]>>8)&0xFF;
-  time_high_limit.set_minute = (r_config[22])&0xFF;
-
-  is_timelimit_active = (r_config[23]>>16)&0xFF;
-
+    is_timelimit_active = (r_config[23]>>16)&0xFF;
+  }
+  
   #ifdef DEBUG
 	PPRINTF("Counter value: %d \n", COUNT3);
 	PPRINTF("Pump on time %d \n", pump_off_ms);
