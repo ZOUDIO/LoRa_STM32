@@ -1672,7 +1672,7 @@ ATEerror_t at_TIMELIMIT_get(const char *param)
 {
   uint8_t low_hour, low_min, high_hour, high_min;
   Get_Time_Boundaries(&low_hour, &low_min, &high_hour, &high_min);
-  AT_PRINTF("Time limit: %02d:%02d:%02d:%02d\r\n", low_hour, low_min, high_hour, high_min);
+  AT_PRINTF("Time limit: %02d:%02d - %02d:%02d\r\n", low_hour, low_min, high_hour, high_min);
   return AT_OK;
 }
 
@@ -1683,7 +1683,7 @@ ATEerror_t at_TIMELIMIT_set(const char *param)
   {
     if( Set_Time_Boundaries(low_hour, low_min, high_hour, high_min))
     {
-      AT_PRINTF("Time limit: %02d:%02d:%02d:%02d\r\n", low_hour, low_min, high_hour, high_min);
+      AT_PRINTF("Time limit: %02d:%02d - %02d:%02d\r\n", low_hour, low_min, high_hour, high_min);
       return AT_OK;
     }
   }

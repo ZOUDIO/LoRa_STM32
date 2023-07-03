@@ -80,6 +80,12 @@ Ex: Set time to 11:25:00 Saturday 20/11/2020
 
 - Fix reset counter interrupt problem due to pwr_control pin deinit when enter low power mode
 - Add AT commands for setting pump time ("AT+PUMPTIME") and time boundaries ("AT+LIMITTIME")
+  
+   > Set pump time to 5000ms (5s) -> AT+PUMPTIME=5000
+
+   > Set the time boundaries so that the pump can only be turned on at 11:25 - 20:45 -> AT+LIMITTIME=11,25,20,45
+   
+   > Note: Send AT+LIMITTIME=255,255,255,255 to turn off the time boundaries
 - Add support downlink message to read configuration parameters
   
 | Size (bytes) |    4           |        1           |    1           |        1          |        1          |
