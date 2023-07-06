@@ -123,10 +123,8 @@ extern uint8_t LinkADR_NbTrans_uplink_counter_retransmission_increment_switch;
 extern uint8_t LinkADR_NbTrans_retransmission_nbtrials;
 extern uint16_t unconfirmed_uplink_change_to_confirmed_uplink_timeout;
 
-static uint8_t config_count=0;
 static uint8_t key_count=0;
 
-static uint32_t s_config[32]; //store config
 static uint32_t s_key[32];    //store key
 
 extern uint32_t APP_TX_DUTYCYCLE;
@@ -1061,15 +1059,18 @@ void Flash_Read_key(void)
 	read_data(16,lora_config.AppSKey,r_key[11],r_key[12],r_key[13],r_key[14]);
 	read_data(8 ,lora_config.AppEui,r_key[15],r_key[16],0,0);
 }
-#define TESTING_ERASE_EEPROM 1
+#define TESTING_ERASE_EEPROM            (0)
+#define TESTING_PRESERVE_DATA_EEPROM   (1)
 #if (TESTING_ERASE_EEPROM == 1)
 volatile uint8_t g_test_erase = 0;
 #endif /* End of TESTING_ERASE_EEPROM */
 
 void EEPROM_Store_Config(void)
 {
+  uint8_t config_count=0;
 	uint32_t combination_data1=0,combination_data2=0;
-	
+  uint32_t s_config[32] = {0}; //store config
+
 	MibRequestConfirm_t mib;
   LoRaMacStatus_t status;
 
@@ -1182,8 +1183,11 @@ void EEPROM_Store_Config(void)
 	s_config[config_count++]=unconfirmed_uplink_change_to_confirmed_uplink_timeout;	
 
   PRINTF("Store config to EEPROM\n\r");
+  PPRINTF("Custom config start addr: 0x%X\n\r", EEPROM_USER_START_ADDR_CONFIG + config_count);
 
-
+  #if (TESTING_PRESERVE_DATA_EEPROM == 0)
+  // Current problem: Check sum correct but pump_off_ms, time-limit = 0 
+  // Prevent writing to Custom config to dumping data
   s_config[config_count++]=COUNT3;
 
   s_config[config_count++]=pump_off_ms;
@@ -1198,25 +1202,29 @@ void EEPROM_Store_Config(void)
     csum += (uint32_t)s_config[i];
   }
   s_config[config_count++]=( ((is_timelimit_active & 0xFF) << 16) | (csum & 0xFFFF) );
-  PPRINTF("Largest config count: %d\n\r", config_count); //23?
+#endif /* End of (TESTING_PRESERVE_DATA_EEPROM == 0) */
+
+  PPRINTF("Custom config end addr: 0x%X\n\r", EEPROM_USER_START_ADDR_CONFIG + config_count);
 #if (TESTING_ERASE_EEPROM == 1)
 if(g_test_erase) {
   s_config[20] = 0;
   s_config[21] = 0;
   s_config[22] = 0;
   s_config[23] = 0;
+  config_count = 23;
   g_test_erase = 0;
   }
 #endif /* End of TESTING_ERASE_EEPROM */
-
+  PPRINTF("Current config count: %d\n\r", config_count);
 	EEPROM_program(EEPROM_USER_START_ADDR_CONFIG,s_config,config_count);//store config
 	
-	config_count=0;
 }
 
 void EEPROM_Read_Config(void)
 {
-	uint32_t star_address=0,r_config[24],r_key[17];
+	uint32_t star_address=0;
+  uint32_t r_config[24] = {0};
+  uint32_t r_key[17] = {0};
 	
 	star_address=EEPROM_USER_START_ADDR_KEY;
 	/* read key*/
@@ -1235,12 +1243,15 @@ void EEPROM_Read_Config(void)
 	
 	
 	star_address=EEPROM_USER_START_ADDR_CONFIG;
+  PRINTF("============================DUMPING CONFIG============================\n\r")
 	for(int i=0;i<24;i++)
 	{
 	  r_config[i]=FLASH_read(star_address);
+    PRINTF("Addr 0x%X: 0x%02X 0x%02X 0x%02X 0x%02X\n\r", star_address, (r_config[i]>>24)&0xFF, (r_config[i]>>16)&0xFF,
+                                                                       (r_config[i]>>8)&0xFF, r_config[i]&0xFF);
 		star_address+=4;
 	}
-	
+  PRINTF("============================DUMPING CONFIG============================\n\r")
 	MibRequestConfirm_t mib;
 	
   mib.Type = MIB_ADR;
