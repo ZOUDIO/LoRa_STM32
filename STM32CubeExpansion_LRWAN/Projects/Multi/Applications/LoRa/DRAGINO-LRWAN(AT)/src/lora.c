@@ -1194,7 +1194,7 @@ void EEPROM_Store_Config(void)
 
   s_config[config_count++]=( (time_low_limit.set_hour<<24) | (time_low_limit.set_minute<<16) |
                              (time_high_limit.set_hour<<8) | (time_high_limit.set_minute) );
-  uint16_t csum=0;
+  uint32_t csum=0;
 
   //calculate checksum
   for(uint8_t i=0; i<config_count; i++)
@@ -1211,7 +1211,7 @@ if(g_test_erase) {
   s_config[21] = 0;
   s_config[22] = 0;
   s_config[23] = 0;
-  config_count = 23;
+  config_count = 24;
   g_test_erase = 0;
   }
 #endif /* End of TESTING_ERASE_EEPROM */
@@ -1371,7 +1371,7 @@ void EEPROM_Read_Config(void)
 	unconfirmed_uplink_change_to_confirmed_uplink_timeout=r_config[19]&0xFFFF;
 
   // r_config[20] - r_config[23]: custom app data
-  uint16_t csum = 0, csum_cal=0;;
+  uint32_t csum = 0, csum_cal=0;;
   for(uint8_t idx = 0; idx< 23; idx++)
   {
       csum_cal += r_config[idx];
