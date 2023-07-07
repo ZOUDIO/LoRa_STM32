@@ -456,6 +456,8 @@ uint8_t *lora_config_nwkskey_get(void);
 
 void EEPROM_Store_key(void);
 void EEPROM_Store_Config(void);
+void EEPROM_Store_Custom_Config(void);
+void EEPROM_Read_Custom_Config(void);
 void Flash_Read_key(void);
 void store_data(uint8_t size,uint8_t *data1,uint32_t data2);
 void read_data(uint8_t size,uint8_t *data1,uint32_t data3,uint32_t data4,uint32_t data5,uint32_t data6);	 

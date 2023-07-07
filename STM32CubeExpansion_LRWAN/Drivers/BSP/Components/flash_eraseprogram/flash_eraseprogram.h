@@ -85,6 +85,8 @@ Maintainer: Miguel Luis and Gregory Cristian
 #define EEPROM_USER_START_ADDR_CONFIG  (DATA_EEPROM_BASE+0x04*24)
 #define EEPROM_USER_END_ADDR_CONFIG    (EEPROM_USER_START_ADDR_CONFIG+0x04*30)
 
+#define EEPROM_CUSTOM_CONF_START_ADDR   (EEPROM_USER_START_ADDR_CONFIG + 0x04 * 30)
+#define EEPROM_CUSTOM_CONF_SIZE					(10)
 void  FLASH_erase(uint32_t page_address);
 void  FLASH_program(uint32_t add, uint32_t *data, uint8_t count);
 void  FLASH_program_on_addr(uint32_t addr,uint32_t data);

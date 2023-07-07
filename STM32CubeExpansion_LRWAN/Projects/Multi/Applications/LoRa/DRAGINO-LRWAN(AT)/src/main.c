@@ -266,6 +266,8 @@ int main(void)
 
 	Flash_copy_key_to_EEPROM();
 
+	EEPROM_Read_Custom_Config();
+
 	new_firmware_update();
 
 	/*Disbale Stand-by mode*/
@@ -1392,15 +1394,15 @@ static void LORA_RxData(lora_AppData_t *AppData)
 		}
 		break;
 	}
-
+	// Adjusting pump time
 	case 0x34:
 	{
-		if (AppData->BuffSize == 5) //----> Adjusting pump-timeout
+		if (AppData->BuffSize == 5)
 		{
 			// Update new pump-off timeout
 			pump_off_ms = AppData->Buff[1] << 24 | AppData->Buff[2] << 16 |
 							   AppData->Buff[3] << 8 | AppData->Buff[4];
-			EEPROM_Store_Config();
+			EEPROM_Store_Custom_Config();
 			PRINTF("Set pump time to %d ms\n\r", pump_off_ms);
 		}
 		break;
@@ -1408,11 +1410,11 @@ static void LORA_RxData(lora_AppData_t *AppData)
 	// Setting time boundary for pump
 	case 0x35:
 	{
-		if( AppData->BuffSize == 5 ) //----> Adjusting pump-timeout
+		if( AppData->BuffSize == 5 )
 		{
 			if (Set_Time_Boundaries(AppData->Buff[1], AppData->Buff[2], AppData->Buff[3], AppData->Buff[4]))
 			{
-				EEPROM_Store_Config();
+				EEPROM_Store_Custom_Config();
 				PRINTF("Set time limit: %d:%d - %d:%d\n\r", AppData->Buff[1], AppData->Buff[2], 
 															AppData->Buff[3], AppData->Buff[4]);
 			}
