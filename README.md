@@ -85,6 +85,9 @@ Ex: Set time to 11:25:00 Saturday 20/11/2020
 
    > Note: Send AT+LIMITTIME=255,255,255,255 to turn off the time boundaries
 
+- Add functions to store/read config parameters (pump time, time boundaries) from EEPROM at 0x80800D8
+- Add support for copy downlink msg to uplink msg for custom work (pump time, time boundaries)
+
 ## Improvements
 >
 > Current implementation will prevent changing to other working mode and force to run in mode 10 after reset

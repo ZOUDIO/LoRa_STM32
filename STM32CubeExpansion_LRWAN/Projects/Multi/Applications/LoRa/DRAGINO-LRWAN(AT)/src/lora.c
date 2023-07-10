@@ -1378,8 +1378,6 @@ void EEPROM_Store_Custom_Config(void)
 {
   uint8_t custom_config_count=0;
   uint32_t s_custom_config[EEPROM_CUSTOM_CONF_SIZE] = {0}; //store config
-  PPRINTF("Store custom config to EEPROM\n\r");
-  PPRINTF("Custom config start addr: 0x%X\n\r", EEPROM_CUSTOM_CONF_START_ADDR + custom_config_count);
 
   #if (TESTING_PRESERVE_DATA_EEPROM == 0)
   s_custom_config[custom_config_count++]=COUNT3;
@@ -1393,7 +1391,6 @@ void EEPROM_Store_Custom_Config(void)
   s_custom_config[custom_config_count++]= 0xFFFFFF00 | (csum & 0xFF) ;
 #endif /* End of (TESTING_PRESERVE_DATA_EEPROM == 0) */
 
-  PPRINTF("Custom config end addr: 0x%X\n\r", EEPROM_CUSTOM_CONF_START_ADDR + custom_config_count);
   
 #if (TESTING_ERASE_EEPROM == 1)
 if(g_test_erase) {
@@ -1432,7 +1429,7 @@ void EEPROM_Read_Custom_Config(void)
   csum = custom_config[3] & 0xFF;
   if ( (csum != csum_cal) || ((custom_config[3] >> 8) != 0xFFFFFF) )
   {
-    PRINTF("crc error, use default config\r\n");
+    PRINTF("crc error, use default config\n\r");
     EEPROM_Store_Custom_Config(); 
   }
   else
@@ -1448,17 +1445,17 @@ void EEPROM_Read_Custom_Config(void)
   }
 
   #ifdef DEBUG
-	PPRINTF("Counter value: %d \n", COUNT3);
-	PPRINTF("Pump on time %d \n", pump_off_ms);
-	PPRINTF("Uplink period %d \n", APP_TX_DUTYCYCLE);
+	PRINTF("Counter value: %d \n", COUNT3);
+	PRINTF("Pump on time %d \n", pump_off_ms);
+	PRINTF("Uplink period %d \n", APP_TX_DUTYCYCLE);
 	if(is_timelimit_active)
 	{
-		PPRINTF("Low limit: %d:%d \n",time_low_limit.set_hour, time_low_limit.set_minute);
-		PPRINTF("High limit: %d:%d \n",time_high_limit.set_hour, time_high_limit.set_minute);
+		PRINTF("Low limit: %d:%d \n",time_low_limit.set_hour, time_low_limit.set_minute);
+		PRINTF("High limit: %d:%d \n",time_high_limit.set_hour, time_high_limit.set_minute);
 	}
 	else
 	{
-		PPRINTF("Time boundaries are not set \r\n");
+		PRINTF("Time boundaries are not set \r\n");
 	}
 	
 	HW_Get12VBat();
