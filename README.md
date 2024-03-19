@@ -1,93 +1,121 @@
 LoRa STM32 Source Code
 ===============
 
-Source code for Dragino LoRa module base on STM32 Chip.
-Support Products: [LoRaST](http://www.dragino.com/products/lora/item/127-lora-st.html), [LSN50](http://www.dragino.com/products/lora/item/128-lsn50.html).
+Source code for [Dragino LoRaST module](http://www.dragino.com/products/lora/item/127-lora-st.html) based on STM STM32L072CZT6 microcontroller and Semtech SX1276 LoRa transceiver.
 
-How To Use Source Code: [For LSN50](http://wiki1.dragino.com/index.php?title=LoRa_Sensor_Node-LSN50#Program_LSN50)
+This fork from the [original repo](https://github.com/dragino/LoRa_STM32) adds specific functionality for Smeerkees Sunscreen dispensers
 
-Switch between LSN50 Code and LoRa ST default code:
+The dispensers contain custom hardware which allows users to attach a solar panel, 12V battery, RTC, PIR sensor, proximity sensor and pump to the module.
 
-In file Projects/Multi/Applications/LoRa/DRAGINO-LRWAN(AT)/inc/hw_conf.h
+In normal operation the system is powered by the battery, which gets charged by the solar panel when the sun is shining.
+If the user waves their hand in front of the PIR, the proximity sensor gets powered. 
+Once the proximity sensors detects movement, the pump is actuated to dispense a portion of sunscreen to the user.
+Usage gets saved to non-volatile memory and sent to a dashboard via a LoRa uplink.
+The user can reset this count value by pressing the reset button.
+Time boundaries can be set via LoRa downlinks to avoid operation and/or abuse outside of the desired hours.
 
-    #define LoRa_Sensor_Node /*LSN50*/      --- For LSN50
-    //#define AT_Data_Send /*AT+SEND or AT+SENDB*/    --- For LoRa ST
+> **_NOTE:_**  This README represents the desired state of the software.\
+> The actual implementation does not match this at the moment of writing.
 
-# Custom work
+# Uploading firmware
+The board has an STDC14 connector which can be used with an STlinkV3 or other SWD compatible programmer.
+The latest binary can be found on the [release page](https://github.com/ZOUDIO/LoRa_STM32/releases) of this repo.
+In production a Python script is used to write the firmware, read the Lora ID's, set the RTC and print a label. 
 
-## Version: V1.8.1
+## Hardware
+The latest hardware files are in the Altium account of Zoudio (info@zoudio.com)\
+<img src="https://github.com/ZOUDIO/LoRa_STM32/assets/48258407/b4817111-f6d9-4237-949b-300aaf859e8e" width="500" height="445">
 
-## Pin used
+## Pinout
+| Signal     | Pin  | Type                        | Function                                 |
+|------------|------|-----------------------------|------------------------------------------|
+| PIR        | PB2  | Digital input, active-high  | Detect PIR sensor state (optional)       |
+| BATT       | PA0  | Analog input                | Read battery voltage                     |
+| RESET_SW   | PB5  | Digital input, active-low   | Reset usage counter                      |
+| PROX       | PB14 | Digital input, active-high  | Detect proximity sensor state            |
+| PUMP       | PB12 | Digital output, active-high | Enable pump                              |
+| LORA_LED_R | PA8  | Digital output, active-low  | Red led of the RGB lora status led       |
+| LORA_LED_G | PB15 | Digital output, active-low  | Green led of the RGB lora status led     |
+| LORA_LED_B | PB13 | Digital output, active-low  | Blue led of the RGB lora status led      |
+| TIME_LED_R | PB3  | Digital output, active-low  | Red led of the RGB timelock status led   |
+| TIME_LED_G | PB4  | Digital output, active-low  | Green led of the RGB timelock status led |
+| TIME_LED_B | PA9  | Digital output, active-low  | Blue led of the RGB timelock status led  |
 
-- Sensor pin: PB12 - Pull-down internally, input interrupt with rising edge
-- Button pin: PB15- Pull-down internally, input interrupt with rising edge
-- Pump pin: PB13 - Output
+The onboard RTC (DS3231MZ+TRL) is connected to I2C via PB6 (SCL) and PB7 (SDA) at address 0x68
 
-## Uplink package format
+# Uplinks
+Uplinks can be differentiated using their index (first byte). Multi-byte fields are MSB unless noted otherwise.
 
-| Size (bytes) |    2               |        4          |
-|--------------|--------------------|--------------------
-| value        |  12 VBattery (mV)  | Counter value     |
+## BOOT
+Sent at boot time to identify device and its firmware version
+| Size (bytes) | 1    | 1     | 1     | 1     |
+|--------------|------|-------|-------|-------|
+| Value        | 0x00 | Major | Minor | Patch |
 
-## Adjusting pump-timeout
+Example: Device with firmware v1.2.3\
+Uplink: 0x00 0x01 0x02 0x03
 
-| Size (bytes) |    1           |        4          |
-|--------------|----------------|--------------------
-| value        |  0x34          | New pump off timer|
+## COUNT
+Sent after sunscreen has been dispensed. Does not repeat if last dispense is less than 6 minutes ago.\
+Gets sent every 30 minutes even if the device did not dispense anything.\
+Includes a field for battery level, all-time counter and a counter that can be reset by the user (used after refilling the sunscreen container). 
+| Size (bytes) | 1    | 2                    | 2                  | 2                   |
+|--------------|------|----------------------|--------------------|---------------------|
+| Value        | 0x01 | Battery voltage (mV) | Counter cumulative | Counter since reset |
 
-Ex: To set pump time off to 5000ms (5s) -> 0x34 0x00 0x00 0x13 0x18 (Hexadecimal - MSB)
+Example: Device with a battery level of 12.34V, cumulative counter of 1234 and counter since reset of 123\
+Uplink: 0x01 0x30 0x34 0x04 0xD2 0x00 0x7B
 
-## Setting the time boudaries for pump
+# Downlinks
+Downlinks are an extension of [Dragino's command set](http://wiki.dragino.com/xwiki/bin/view/Main/End%20Device%20AT%20Commands%20and%20Downlink%20Command/) and thus start after their last used command index (0x34).\
+All downlinks are confirmed with an uplink copy.\
+Every downlink has an associated AT command which accepts decimal input. Hexadecimal is also allowed with prefix 0x.\
+The current value can be requested by sending '?' (e.g. AT+TIMELOCK=?)
 
-0x35 HH_low MM_low HH_high MM_high
-| Size (bytes) |    1           |        1           |    1           |        1          |        1          |
-|--------------|----------------|--------------------|----------------|-------------------|-------------------
-| value        |  0x35          | Hour low limit     | Min low limit  | Hour high limit   | Min high limit    |
+## PUMP_DURATION
+| Size (bytes) | 1    | 2                  |
+|--------------|------|--------------------|
+| Value        | 0x35 | Pump duration (ms) |
 
-Ex: Set the time boundaries so that the pump can only be turned on at 11:25 - 20:45
--> Downlink: 0x35 0x0A 0x19 0x14 0x2D
+Example: Set pump duration to 1000ms\
+Downlink: 0x35 0x03 0xE8\
+AT command: AT+PUMPDURATION=1000\
+Note: default is 250ms
 
-Note: Send 0x35 0xFF 0xFF 0xFF 0xFF to turn off the time boundaries
+## TIME_LOCK
+| Size (bytes) | 1    | 1              | 1                | 1               | 1                 |
+|--------------|------|----------------|------------------|-----------------|-------------------|
+| Value        | 0x36 | Hour low limit | Minute low limit | Hour high limit | Minute high limit |
 
-## AT commands to time for DS3231 (Input is in decimal)
+Example: Set the time limit from 11:00 to 15:30\
+Downlink: 0x36 0x0B 0x00 0x0F 0x1E\
+AT command: AT+TIMELOCK=11,0,15,30\
+Note: Set all hours/minutes to 255 (0xFF) to disable timelock (default)
 
-Set time → AT+TIME=HH,MM,SS
-Set date→  AT+DATE=D,DD,MM,YY (D = Day = Sunday -Saturday ~ 1-7)
+## RTC
+This is usually done once using AT commands in production, but can also be done via downlink if needed.
+| Size (bytes) | 1    | 1    | 1     | 1    | 1     | 1       | 1       |
+|--------------|------|------|-------|------|-------|---------|---------|
+| Value        | 0x37 | Year | Month | Date | Hours | Minutes | Seconds |
 
-Ex: Set time to 11:25:00 Saturday 20/11/2020
+Example: Set the RTC to 12:34:56 on 18 March 2024\
+Downlink: 0x36 0x18 0x03 0x12 0x0C 0x22 0x38\
+AT command: AT+RTC=24,3,18,12,34,56\
+Note: Year is represented by last two digits (e.g. 2024 = 24)
 
--> AT+TIME=11,25,00
+# Status LEDs
+## LoRa
+| Color  | State          |
+|--------|----------------|
+| Red    | Disconnected   |
+| Orange | Sending uplink |
+| Green  | Connected      |
 
--> AT+DATE=7,20,11,20
+## Timelock
+| Color  | State           |
+|--------|-----------------|
+| Red    | RTC not set     |
+| Orange | Timelock active |
 
-## Version 1.8.2
-
-## Pin used
-
-- Button pin: PB5- Pull-down internally, input interrupt with rising edge
-- PROX_SIGNAL_3V3 pin: PB14 - Pull-down internally, input interrupt with rising edge
-- PROX_EN pin: PA10 - Input
-- Pump pin: PB12 - Output
-- LED RED pin: PB13 - Output active low
-- LED BLUE pin: PB15 - Output active low
-- LED GREEN pin: PA8 - Output (RADIO ANT SWTICH)
-
-## Version 1.8.3
-
-## Uplink read config parameters after received 0x40 0x40 downlink
-
-- Fix reset counter interrupt problem due to pwr_control pin deinit when enter low power mode
-- Add AT commands for setting pump time ("AT+PUMPTIME") and time boundaries ("AT+LIMITTIME")
-  
-   > Set pump time to 5000ms (5s) -> AT+PUMPTIME=5000
-
-   > Set the time boundaries so that the pump can only be turned on at 11:25 - 20:45 -> AT+LIMITTIME=11,25,20,45
-
-   > Note: Send AT+LIMITTIME=255,255,255,255 to turn off the time boundaries
-
-- Add functions to store/read config parameters (pump time, time boundaries) from EEPROM at 0x80800D8
-- Add support for copy downlink msg to uplink msg for custom work (pump time, time boundaries)
-
-## Improvements
->
-> Current implementation will prevent changing to other working mode and force to run in mode 10 after reset
+# Questions / remarks?
+Main repo maintainer (Jesse van der Zouw) can be contacted via info@zoudio.com
